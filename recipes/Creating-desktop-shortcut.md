@@ -1,6 +1,6 @@
-# Creating a desktop shortcut to a specific web page
+# Creating a desktop shortcut to a specific URL
 
-Create a file in `~/.local/share/applications` with +x
+Create a file called something like `arvados.desktop` in `~/.local/share/applications` with +x
 
 ```
 [Desktop Entry]

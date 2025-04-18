@@ -21,5 +21,5 @@
 * [Pre-initializating EXT4 filesystem on hard drive](Pre-initializating-EXT4-filesystem-on-hard-drive.md)
 * [Testing network bandwidth with `iperf3`](Testing-network-bandwidth-with-iperf3.md)
 * [Remove a user from GDM login selection screen](Prevent-GNOME-display-manager-GDM3-from-showing-a-certain-user.md)
+* [Change the GDM login screen logo](Login-screen-logo.md)
 * [Creating a GNOME desktop shortcut](Creating-desktop-shortcut.md)
-*
