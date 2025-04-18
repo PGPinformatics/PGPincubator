@@ -48,4 +48,4 @@ done fairly against a common baseline.
 
 Currently conducting research and development around tooling.
 
-See [Arvados recipes index](recipes/Arvados recipes index.md)
+See [Arvados recipes index](recipes/Arvados-recipes-index.md)

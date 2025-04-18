@@ -1,6 +1,6 @@
 # Arvados recipe index
 
-* [Host setup and base image](CreatebaseimageforArvados/Create base image for Arvados.md) (based on R7, supposed to be generic)
+* [Host setup and base image](Create-base-image-for-Arvados/Create-base-image-for-Arvados.md) (based on R7, supposed to be generic)
 * [Single-host single-hostname installation](https://docs.google.com/document/d/1w6DQqR3D65DcTCpMX51RrDvz547bYImCrPoY8A71-bE/edit?usp=sharing) on base
 * [Minimal host setup](https://docs.google.com/document/d/1T_jKeg15AKtY30zkIHjFOxBWcXiarEPfvvW5plUzvAw/edit?usp=sharing) that supports running ROCm-based apps on GPU in a container (based on UM790XTX OR W7900Pro)
 * [Running ROCm-powered llamafile with GPU in a container](https://docs.google.com/document/d/1m54KHng7ICEqv_onQm7SVbljlPSYS9K05rH0uPbEz9U/edit?usp=sharing)
