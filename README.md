@@ -46,6 +46,29 @@ done fairly against a common baseline.
 
 # Current status
 
-Currently conducting research and development around tooling.
+Currently conducting research and development around supporting software and tooling.
 
-See [Arvados recipes index](recipes/Arvados-recipes-index.md)
+See [PGPi recipes index](recipes/Arvados-recipes-index.md)
+
+# Implementation plan
+
+1. The starting point is a Ubuntu desktop OS image
+
+2. Running in a virtual machine, provision it with key resources:
+* [Arvados](https://arvados.org) (software installation and database initialization)
+* Open data, tools, workflows, AI models and learning materials making
+  up the core of the "h-gram" copied into the Arvados instance
+* GPU drivers
+
+3. Copy the image to a microSD card and apply individual provisioning
+* Arvados cluster id and hostnames
+* Tailscale credentials to join the PGPi network
+
+4. Distribute the h-gram to interested parties
+* People provide their own hardware, booting the h-gram should be "plug and play"
+* Can immediately start browsing the resources on the h-gram, running
+  AI models or genomics workflows.
+
+5. Boxes running h-gram OS join the PGPi network enabling them to
+   download additional resources, collaborate with others, and
+   contribute to the project.
