@@ -1,6 +1,6 @@
-= Personal Genome Project incubator
+* Personal Genome Project incubator
 
-== Vision
+** Vision
 
 The PGPincubator is an effort to create a distribution of open data,
 tools, workflows, AI models and learning materials that support
@@ -44,8 +44,8 @@ work, for others to reproduce that work, and for students to study
 that work, while ensuring that validation and benchmarking methods are
 done fairly against a common baseline.
 
-= Current status
+* Current status
 
 Currently conducting research and development around tooling.
 
-See [Arvados recipes index](recipes/Arvadosrecipesindex.html)
+See [Arvados recipes index](recipes/Arvadosrecipesindex.md)
