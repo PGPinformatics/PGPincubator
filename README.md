@@ -44,7 +44,7 @@ work, for others to reproduce that work, and for students to study
 that work, while ensuring that validation and benchmarking methods are
 done fairly against a common baseline.
 
-# Recipies
+# Recipes
 
 Currently conducting research and development around supporting software and tooling.
 
