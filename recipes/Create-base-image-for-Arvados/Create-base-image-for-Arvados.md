@@ -349,4 +349,4 @@ In the **host**, the following creates a directory `$HOME/src` and the Arvados s
 
 # Next steps
 
-[Install the development version](https://docs.google.com/document/d/1w6DQqR3D65DcTCpMX51RrDvz547bYImCrPoY8A71-bE/edit?usp=sharing) of Arvados packages (dkpg).
+[Install the development version](../Install-Arvados-instance-over-base-image.md) of Arvados packages (dkpg).

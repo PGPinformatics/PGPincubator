@@ -16,8 +16,8 @@ The **rest of the instructions** are meant to be carried out inside the **guest*
 
 ## Prepare encryption key file
 
-As root, create a random data file of 2048 bytes for use as disk encryption key  
-`# dd if=/dev/random of=~/.extkey bs=512 count=4`  
+As root, create a random data file of 2048 bytes for use as disk encryption key
+`# dd if=/dev/random of=~/.extkey bs=512 count=4`
 `# chmod 400 ~/.extkey`
 
 ## Install system tools
@@ -42,8 +42,8 @@ This creates the block device corresponding to the decrypted drive. The name "sd
 
 ## Make use of decrypted drive (with LVM)
 
-`# pvcreate /dev/mapper/sda_crypt`  
-`# vgcreate vgguesthd1 /dev/mapper/sda_crypt`  
+`# pvcreate /dev/mapper/sda_crypt`
+`# vgcreate vgguesthd1 /dev/mapper/sda_crypt`
 `# lvcreate -l '100%FREE' -n lvguesthd1 vgguesthd1 /dev/mapper/sda_crypt`
 
 These commands make the *decrypted* block device a physical volume (PV) and create a volume group (VG) with one logical volume (LV). The LV is functionally roughly the equivalent of a partition.
@@ -52,7 +52,8 @@ Here "`vgguesthd1`" is the VG name and "`lvguesthd1`" is the LV name, used as ex
 
 ### Create EXT4 file system on LV
 
-(see [how to do this with preinitialization](https://docs.google.com/document/d/1wi-fUvOltceBCv0SpwhVRbl2lsmGk3vntfvhtnBi810/edit?usp=sharing))  
+see [how to do this with preinitialization](Pre-initializating-EXT4-filesystem-on-hard-drive.md)
+
 `# mkfs.ext4 -c -E lazy_itable_init=0,lazy_journal_init=0 /dev/mapper/vgguesthd1-lvguesthd1`
 
 Note that you can refer to the LV block device as `/dev/mapper/[VG name]-[LV name]`, among other ways.
@@ -65,18 +66,18 @@ Note that you can refer to the LV block device as `/dev/mapper/[VG name]-[LV nam
 
 #### Configure `crypttab` and `fstab` with block device UUIDs
 
-For the encrypted drive (underlying encrypted physical drive)  
-`# blkid /dev/sda`  
+For the encrypted drive (underlying encrypted physical drive)
+`# blkid /dev/sda`
 `/dev/sda: UUID="[DRIVE_UUID]" TYPE="crypto_LUKS"`
 
-Edit `/etc/crypttab` (create if missing) with the following line  
+Edit `/etc/crypttab` (create if missing) with the following line
 `sda_crypt UUID=[DRIVE_UUID] /root/.extkey luks,noearly`
 
-For the logical volume (like a partition on which a FS exists):  
-`# blkid /dev/mapper/vgguesthd1-lvguesthd1`  
+For the logical volume (like a partition on which a FS exists):
+`# blkid /dev/mapper/vgguesthd1-lvguesthd1`
 `[output with UUID for the LV]`
 
-Edit `/etc/fstab`, append to the file  
+Edit `/etc/fstab`, append to the file
 `UUID=[LV_UUID]	/data/guesthd1	ext4	defaults,noinit_itable	0	2`
 
 #### Try out
