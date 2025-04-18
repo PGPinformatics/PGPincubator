@@ -44,31 +44,30 @@ work, for others to reproduce that work, and for students to study
 that work, while ensuring that validation and benchmarking methods are
 done fairly against a common baseline.
 
-# Current status
+# Recipies
 
 Currently conducting research and development around supporting software and tooling.
 
-See [PGPi recipes index](recipes/Arvados-recipes-index.md)
+* [Host setup and base image](recipes/Create-base-image-for-Arvados/Create-base-image-for-Arvados.md) (based on R7, supposed to be generic)
+* [Single-host single-hostname installation](recipes/Install-Arvados-instance-over-base-image.md) on base
+* [Minimal host setup](recipes/Minimal-install-of-AMD-ROCm-for-Docker-images.md) that supports running ROCm-based apps on GPU in a container (based on UM790XTX OR W7900Pro)
+* [Running ROCm-powered llamafile with GPU in a container](recipes/llamafile-with-ROCm-in-container.md)
+* [Passing through SATA controller for use by the guest, with disk encryption setup](recipes/SATA-controller-passthrough-for-guest.md)
 
-# Implementation plan
+## Running demos
 
-1. The starting point is a Ubuntu desktop OS image
+* Very much TBD, do not use yet: [\[TBD\] Guide for running the guest-to-host GPU-enabled pipeline with llamafile](recipes/Guide-for-running-the-guest-to-host-GPU-enabled-pipeline-with-llamafile.md)
+* [Running complete human WGS processing workflow locally](recipes/Running-complete-human-WGS-processing-workflow-locally.md)
 
-2. Running in a virtual machine, provision it with key resources:
-* [Arvados](https://arvados.org) (software installation and database initialization)
-* Open data, tools, workflows, AI models and learning materials making
-  up the core of the "h-gram" copied into the Arvados instance
-* GPU drivers
+## Related recipes
 
-3. Copy the image to a microSD card and apply individual provisioning
-* Arvados cluster id and hostnames
-* Tailscale credentials to join the PGPi network
+* (Generic guide) [Invoking docker to run containers with GPU support](recipes/Invoking-docker-to-run-containers-with-GPU-support.md)
 
-4. Distribute the h-gram to interested parties
-* People provide their own hardware, booting the h-gram should be "plug and play"
-* Can immediately start browsing the resources on the h-gram, running
-  AI models or genomics workflows.
+## System admin fragments
 
-5. Boxes running h-gram OS join the PGPi network enabling them to
-   download additional resources, collaborate with others, and
-   contribute to the project.
+* [Creating a Memtest86+ bootable USB drive that works with UEFI](recipes/UEFI-compatible-Memtest86+-on-bootable-USB.md)
+* [Pre-initializating EXT4 filesystem on hard drive](recipes/Pre-initializating-EXT4-filesystem-on-hard-drive.md)
+* [Testing network bandwidth with `iperf3`](recipes/Testing-network-bandwidth-with-iperf3.md)
+* [Remove a user from GDM login selection screen](recipes/Prevent-GNOME-display-manager-GDM3-from-showing-a-certain-user.md)
+* [Change the GDM login screen logo](recipes/Login-screen-logo.md)
+* [Creating a GNOME desktop shortcut](recipes/Creating-desktop-shortcut.md)
