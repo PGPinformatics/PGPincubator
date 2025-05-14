@@ -69,7 +69,7 @@ ansible-playbook -u pgpadmin -Ki example-inv.yml get-tailscale-cert.yml
 This does all the real work of installing and configuring Arvados.
 
 ```
-ansible-playbook -u pgpadmin -Ki example-inv.yml arvados/ansible/install-arvados-cluster.yml
+ansible-playbook -u pgpadmin -Ki example-inv.yml arvados/tools/ansible/install-arvados-cluster.yml
 ```
 
 ## Step 6: Run diagnostics
