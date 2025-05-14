@@ -1,0 +1,57 @@
+# Example Ansible inventory file for installing and maintaining an
+# Arvados cluster.  See README.md for details.
+
+all:
+  vars:
+    # Update this to appropriate path
+    arvados_config_file: /home/example/ansible/xampl-config.yml
+    arvados_cluster_id: xampl
+    arvados_tls:
+      Default:
+        cert: "/etc/ssl/certs/xampl.snowshoe-company.ts.net.pem"
+        key: "/etc/ssl/private/xampl.snowshoe-company.ts.net.key"
+        remote: true
+    arvados_nginx_internal_networks:
+      "127.0.0.1/24": true
+
+# All the necessary roles, which will all be installed on the host "xampl".
+
+arvados_api:
+  hosts:
+    xampl.snowshoe-company.ts.net:
+
+arvados_controller:
+  hosts:
+    xampl.snowshoe-company.ts.net:
+
+arvados_websocket:
+  hosts:
+    xampl.snowshoe-company.ts.net:
+
+arvados_keepstore:
+  hosts:
+    xampl.snowshoe-company.ts.net:
+
+arvados_keepproxy:
+  hosts:
+    xampl.snowshoe-company.ts.net:
+
+arvados_keep_web:
+  hosts:
+    xampl.snowshoe-company.ts.net:
+
+arvados_dispatch_local:
+  hosts:
+    xampl.snowshoe-company.ts.net:
+
+arvados_workbench:
+  hosts:
+    xampl.snowshoe-company.ts.net:
+
+arvados_postgresql:
+  hosts:
+    xampl.snowshoe-company.ts.net:
+  vars:
+    arvados_postgresql_hba_sources:
+      - samenet
+    arvados_postgresql_hba_method: scram-sha-256

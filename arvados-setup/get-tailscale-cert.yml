@@ -1,0 +1,6 @@
+- hosts: all
+  tasks:
+    - name: Install tailscale cert
+      become: yes
+      ansible.builtin.command:
+        cmd: tailscale cert --cert-file /etc/ssl/certs/{{ inventory_hostname }}.pem --key-file /etc/ssl/private/{{ inventory_hostname }}.key {{ inventory_hostname }}

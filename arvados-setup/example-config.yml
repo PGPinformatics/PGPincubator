@@ -1,0 +1,81 @@
+# Example Arvados config file. See README.md for details.
+
+Clusters:
+  xampl:
+    ManagementToken: 9sSxxxxxxxxFIXMExxxxxxxxxxxLrpwD
+    SystemRootToken: nWixxxxxxxxFIXMExxxxxxxxxxxBPR8D
+    Collections:
+      BlobSigningKey: TibxxxxxxxFIXMExxxxxxxxxxxxmvNpa
+      DefaultReplication: 1
+    PostgreSQL:
+      Connection:
+        user: arvados
+        password: J3xxxxxxxxFIXMExxxxxxxxxxxxx0kFt
+        host: localhost
+        port: "5432"
+        dbname: "arvados_production"
+
+    Login:
+      PAM:
+        Enable: true
+
+    Users:
+      AutoAdminFirstUser: true
+
+    TLS:
+      Certificate: "/etc/ssl/certs/xampl.snowshoe-company.ts.net.pem"
+      Key: "/etc/ssl/private/xampl.snowshoe-company.ts.net.key"
+
+    Services:
+      RailsAPI:
+        InternalURLs:
+          "http://localhost:8000":
+            ListenURL: "http://localhost:8000"
+      Controller:
+        InternalURLs:
+          "http://localhost:8001":
+            ListenURL: "http://localhost:8001"
+        ExternalURL: "https://xampl.snowshoe-company.ts.net:7001"
+      Websocket:
+        InternalURLs:
+          "http://localhost:8002":
+            ListenURL: "http://localhost:8002"
+        ExternalURL: "https://xampl.snowshoe-company.ts.net:7002"
+      Keepbalance:
+        InternalURLs:
+          "http://localhost:8003":
+            ListenURL: "http://localhost:8003"
+        ExternalURL: "https://xampl.snowshoe-company.ts.net:7003"
+      Keepproxy:
+        InternalURLs:
+          "http://localhost:8004":
+            ListenURL: "http://localhost:8004"
+        ExternalURL: "https://xampl.snowshoe-company.ts.net:7004"
+      WebDAV:
+        InternalURLs:
+          "http://localhost:8005":
+            ListenURL: "http://localhost:8005"
+        ExternalURL: "https://xampl.snowshoe-company.ts.net:7005"
+      WebDAVDownload:
+        InternalURLs:
+          "http://localhost:8005":
+            ListenURL: "http://localhost:8005"
+        ExternalURL: "https://xampl.snowshoe-company.ts.net:7005"
+      Keepstore:
+        InternalURLs:
+          "http://localhost:8006":
+            ListenURL: "http://localhost:8006"
+        ExternalURL: "https://xampl.snowshoe-company.ts.net:7006"
+      Workbench2:
+        ExternalURL: "https://xampl.snowshoe-company.ts.net:443"
+
+    Volumes:
+      xampl-nyw5e-000000000000000:
+        Driver: Directory
+        Replication: 1
+        DriverParameters:
+          Root: /var/lib/arvados/keep-data
+
+    # TODO get defaults from config
+    API:
+      MaxRequestSize: 134217728
