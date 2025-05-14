@@ -19,7 +19,7 @@ pip install ansible~=8.7
 ```
 
 ```
-git clone https://github.com/arvados/arvados
+git clone https://github.com/arvados/arvados.git
 git -C arvados checkout main
 ```
 
