@@ -120,6 +120,9 @@ How to copy a reference project to the h-gram Arvados instance.
 
 ## Option 1: Use arv-copy
 
+This is currently the standard tool for the job, but may slower than
+using the export/import tools described below.
+
 Copy project source `xsrc1` to destination `xampl`:
 
 ```
@@ -163,6 +166,9 @@ For example, the JSON record for the exported project will be found at
 `arvados/v1/groups/xsrc1-j7d0g-myprojectuuid11`.
 
 ### Step 3: Cluster import from the local filesystem
+
+There are two options, (1) uploading the blocks using the keep API or
+(2) copying them directly on to the target file system.
 
 #### Option 1: Block upload
 
