@@ -108,3 +108,93 @@ endpoint (0 ms): Get "": unsupported protocol scheme ""` is expected.
 This is actually bug in the diagnostic tool -- it should skip over the
 unconfigured non-essential service rather than reporting it as an
 error.  It will be fixed in a future version.
+
+# Copying a project on the h-gram image
+
+How to copy a reference project to the h-gram Arvados instance.
+
+## Assumptions
+
+* You have read access to a project you are copying/exporting from.
+* You have admin access to the Arvados instance you are copying/importing into.
+
+## Option 1: Use arv-copy
+
+Copy project source `xsrc1` to destination `xampl`:
+
+```
+arv-copy --src xsrc1 --dst xampl xsrc1-j7d0g-uvrkek9o6yhqy4e
+```
+
+This copies keep blocks, collection records and project records by
+downloading them from the source cluster and uploading them to the
+destination cluster.
+
+## Option 2: Use arv-export and arv-import
+
+These are new tools developed for this purpose.
+
+### Step 1: Install the tools
+
+These are still under development, you need to get them from a branch:
+
+```
+. venv/bin/activate
+cd arvados
+git fetch
+git checkout 22868-import-export
+cd sdk/python
+pip install .
+```
+
+### Step 2: Export to the local filesystem
+
+```
+mkdir my-project-export
+cd my-project-export
+arv-export xsrc1-j7d0g-myprojectuuid11
+```
+
+This will create two directories called `arvados/` and `keep/`.  The
+`arvados/` directory will have the JSON records and the `keep/`
+directory will have the keep blocks.
+
+For example, the JSON record for the exported project will be found at
+`arvados/v1/groups/xsrc1-j7d0g-myprojectuuid11`.
+
+### Step 3: Cluster import from the local filesystem
+
+#### Option 1: Block upload
+
+From the `my-project-export` directory:
+
+```
+export ARVADOS_API_HOST=xampl.snowshoe-company.ts.net:7001
+export ARVADOS_API_TOKEN=nWixxxxxxxxFIXMExxxxxxxxxxxBPR8D
+arv-import xsrc1-j7d0g-myprojectuuid11
+```
+
+This will import the project `xsrc1-j7d0g-myprojectuuid11` from the
+local filesystem that was previously exported.  This will create new
+records on the destination cluster `xampl` for all the projects,
+subprojects and collections, and upload all the keep blocks.
+
+#### Option 2: Direct block copy
+
+This is the same as before, except provide `--no-block-copy` and then
+copy the contents of `keep` directly to the target file system that
+will be used as a keepstore "Directory" volume.  From the
+`my-project-export` directory:
+
+```
+export ARVADOS_API_HOST=xampl.snowshoe-company.ts.net:7001
+export ARVADOS_API_TOKEN=nWixxxxxxxxFIXMExxxxxxxxxxxBPR8D
+arv-import --no-block-copy xsrc1-j7d0g-myprojectuuid11
+cp -r keep /mnt/xampl-data-filesystem/keep
+```
+
+This will import the project `xsrc1-j7d0g-myprojectuuid11` from the
+local filesystem that was previously exported.  This will create new
+records on the destination cluster `xampl` for all the projects,
+subprojects and collections, but _not_ copy the keep blocks, which are
+instead copied directly using `cp`.
