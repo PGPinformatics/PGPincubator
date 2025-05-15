@@ -181,7 +181,7 @@ arv-import xsrc1-j7d0g-myprojectuuid11
 ```
 
 This will import the project `xsrc1-j7d0g-myprojectuuid11` from the
-local filesystem that was previously exported.  This will create new
+local filesystem where it was previously exported.  This will create new
 records on the destination cluster `xampl` for all the projects,
 subprojects and collections, and upload all the keep blocks.
 
@@ -200,7 +200,7 @@ cp -r keep /mnt/xampl-data-filesystem/keep
 ```
 
 This will import the project `xsrc1-j7d0g-myprojectuuid11` from the
-local filesystem that was previously exported.  This will create new
+local filesystem where it was previously exported.  This will create new
 records on the destination cluster `xampl` for all the projects,
 subprojects and collections, but _not_ copy the keep blocks, which are
 instead copied directly using `cp`.
