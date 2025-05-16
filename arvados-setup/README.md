@@ -7,9 +7,9 @@ an additional layer of orchestration that fully automates the process.
 ## Assumptions
 
 * You are doing a single host install (self-contained).
-* The target machine (or "managed node" in Ansible parlance) is already on
+* The destination machine (or "managed node" in Ansible parlance) is already on
   Tailnet.
-* You already have a sudo-capable user account on the target machine. This
+* You already have a sudo-capable user account on the destination machine. This
   document will use the user name `pgpadmin`.
 * On the machine from which you initiate the installation ("control node"), you
   can install Ansible in a Python venv.
@@ -73,7 +73,8 @@ Copy `example-inv.yml` from this repo, and then open the file for editing:
 
 ## Step 4: Install certificate
 
-This gets the certificates from Tailscale and installs them on the target host.
+This gets the certificates from Tailscale and installs them on the destination
+host.
 
 ```
 ansible-playbook -u pgpadmin -Ki example-inv.yml get-tailscale-cert.yml
@@ -109,7 +110,7 @@ This is actually bug in the diagnostic tool -- it should skip over the
 unconfigured non-essential service rather than reporting it as an
 error.  It will be fixed in a future version.
 
-# Copying a project on the h-gram image
+# Copying a project to the h-gram image
 
 How to copy a reference project to the h-gram Arvados instance.
 
@@ -117,17 +118,28 @@ How to copy a reference project to the h-gram Arvados instance.
 
 * You have read access to a project you are copying/exporting from.
 * You have admin access to the Arvados instance you are copying/importing into.
+* You have the
+  [API tokens](https://doc.arvados.org/main/user/reference/api-tokens.html)
+  configured for the source and destination Arvados instances.
+
+In this document, we will use the cluster ID `xsrc1` as a stand-in for the
+source Arvados instacne in which the existing project resides, while `xsampl`
+will be the destination Arvados instance you are copying/exporting into.
 
 ## Option 1: Use arv-copy
 
-This is currently the standard tool for the job, but may slower than
-using the export/import tools described below.
+This is currently the
+[standard tool](https://doc.arvados.org/main/user/topics/arv-copy.html) for the
+job, but may slower than using the export/import tools described below.
 
 Copy project source `xsrc1` to destination `xampl`:
 
 ```
-arv-copy --src xsrc1 --dst xampl xsrc1-j7d0g-uvrkek9o6yhqy4e
+arv-copy --src xsrc1 --dst xampl xsrc1-j7d0g-myprojectuuid11
 ```
+
+Here, `xsrc1-j7d0g-myprojectuuid11` is a placeholder for the UUID of the source
+project.
 
 This copies keep blocks, collection records and project records by
 downloading them from the source cluster and uploading them to the
@@ -139,7 +151,9 @@ These are new tools developed for this purpose.
 
 ### Step 1: Install the tools
 
-These are still under development, you need to get them from a branch:
+These are still under development, and you need to get them from a branch,
+after installing Python venv and cloning the Arvados source repo following the
+steps as described in the first part of this document.
 
 ```
 . venv/bin/activate
@@ -158,17 +172,20 @@ cd my-project-export
 arv-export xsrc1-j7d0g-myprojectuuid11
 ```
 
-This will create two directories called `arvados/` and `keep/`.  The
-`arvados/` directory will have the JSON records and the `keep/`
-directory will have the keep blocks.
+Running `arv-export` will create two sub-directories called `arvados/` and
+`keep/` under the top-level directory `my-project-export`.  The `arvados/`
+directory will have the JSON records and the `keep/` directory will have the
+Keep blocks.
 
 For example, the JSON record for the exported project will be found at
 `arvados/v1/groups/xsrc1-j7d0g-myprojectuuid11`.
 
 ### Step 3: Cluster import from the local filesystem
 
-There are two options, (1) uploading the blocks using the keep API or
-(2) copying them directly on to the target file system.
+There are two options:
+
+1. Uploading the blocks using the keep API, or
+2. Copying them directly on to the destination file system.
 
 #### Option 1: Block upload
 
@@ -180,27 +197,44 @@ export ARVADOS_API_TOKEN=nWixxxxxxxxFIXMExxxxxxxxxxxBPR8D
 arv-import xsrc1-j7d0g-myprojectuuid11
 ```
 
+Here, the environment variable `ARVADOS_API_HOST` and `ARVADOS_API_TOKEN`
+refers to the destination Arvados instance.
+
 This will import the project `xsrc1-j7d0g-myprojectuuid11` from the
-local filesystem where it was previously exported.  This will create new
-records on the destination cluster `xampl` for all the projects,
-subprojects and collections, and upload all the keep blocks.
+local filesystem where it was previously exported from the `xsrc1` Arvados
+instance.  This will create new records on the destination instance `xampl` for
+the project, its subprojects and collections, _and_ upload all the Keep blocks.
 
 #### Option 2: Direct block copy
 
-This is the same as before, except provide `--no-block-copy` and then
-copy the contents of `keep` directly to the target file system that
-will be used as a keepstore "Directory" volume.  From the
-`my-project-export` directory:
+This is similar to the preceding option, except by providing the
+`--no-block-copy` option to the `arv-import` command, we skip the copying of
+the contents of the Keepstore blocks under the `keep/` sub-directory.
+
+The blocks will instead be copied to the destination file system that backs the
+destination Arvados Keepstore volume separately.  From the `my-project-export`
+directory:
 
 ```
 export ARVADOS_API_HOST=xampl.snowshoe-company.ts.net:7001
 export ARVADOS_API_TOKEN=nWixxxxxxxxFIXMExxxxxxxxxxxBPR8D
 arv-import --no-block-copy xsrc1-j7d0g-myprojectuuid11
-cp -r keep /mnt/xampl-data-filesystem/keep
 ```
 
 This will import the project `xsrc1-j7d0g-myprojectuuid11` from the
-local filesystem where it was previously exported.  This will create new
-records on the destination cluster `xampl` for all the projects,
-subprojects and collections, but _not_ copy the keep blocks, which are
-instead copied directly using `cp`.
+local filesystem where it was previously exported from the source Arvados
+instance `xsrc1`.  This will create new records on the destination cluster
+`xampl` for the project, its subprojects and collections, but will _not_ copy
+the Keep blocks.
+
+To complete the import, the blocks, under the `my-project-export/keep`
+directory, must be copied to the destination host separately (for example, with
+`scp` or `rsync`). For a Keepstore volume backed by [filesystem
+storage](https://doc.arvados.org/main/install/configure-fs-storage.html),
+the destination path is specified in the Arvados configuration file
+(`/etc/arvados/config.yml`); by default, it is at `/var/lib/arvados/keep-data`.
+A hypothetical commandline using `scp` would be
+
+```
+scp -r keep/* [user@]xampl.snowshoe-company.ts.net:/var/lib/arvados/keep-data`
+```
