@@ -141,7 +141,7 @@ arv-copy --src xsrc1 --dst xampl xsrc1-j7d0g-myprojectuuid11
 Here, `xsrc1-j7d0g-myprojectuuid11` is a placeholder for the UUID of the source
 project.
 
-This copies keep blocks, collection records and project records by
+This copies Keep blocks, collection records and project records by
 downloading them from the source cluster and uploading them to the
 destination cluster.
 
@@ -184,7 +184,7 @@ For example, the JSON record for the exported project will be found at
 
 There are two options:
 
-1. Uploading the blocks using the keep API, or
+1. Uploading the blocks using the Keep API, or
 2. Copying them directly on to the destination file system.
 
 #### Option 1: Block upload
