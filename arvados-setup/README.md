@@ -236,5 +236,5 @@ the destination path is specified in the Arvados configuration file
 A hypothetical commandline using `scp` would be
 
 ```
-scp -r keep/* [user@]xampl.snowshoe-company.ts.net:/var/lib/arvados/keep-data`
+scp -r keep/* [user@]xampl.snowshoe-company.ts.net:/var/lib/arvados/keep-data
 ```
