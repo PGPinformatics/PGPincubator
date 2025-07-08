@@ -15,6 +15,10 @@ an additional layer of orchestration that fully automates the process.
   can install Ansible in a Python venv.
   * On Ubuntu, you can install the venv module with
   `sudo apt install python3-venv`.
+* From the control node, you can use SSH to log into the managed node as the
+  sudo-capable user `pgpadmin`.
+  * On Ubuntu, you can install the OpenSSH server with
+  `sudo apt install openssh-server`.
 
 ## Step 0: Install Ansible and clone Arvados playbooks
 
