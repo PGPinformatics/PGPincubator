@@ -75,6 +75,25 @@ Copy `example-inv.yml` from this repo, and then open the file for editing:
 3. Search-and-replace `xampl` with the five-character Arvados cluster id that
    you are using.
 
+### Optional: Install developmental version
+
+To install the latest developmental version of Arvados packages built from the
+`main` branch, add the variable `arvados_apt_suites: "-dev"` to the inventory
+file. For example,
+
+```yaml
+all:
+  vars:
+    # Update this to appropriate path
+    arvados_config_file: /home/example/ansible/xampl-config.yml
+    arvados_cluster_id: xampl
+    arvados_apt_suites: "-dev"
+    [...]
+```
+
+Note: Once developmental pacakages are installed, it will be difficult to
+downgrade the installation to a stable version.
+
 ## Step 4: Install certificate
 
 This gets the certificates from Tailscale and installs them on the destination
