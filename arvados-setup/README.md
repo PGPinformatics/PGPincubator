@@ -12,126 +12,73 @@ an additional layer of orchestration that fully automates the process.
 * You already have a sudo-capable user account on the destination machine. This
   document will use the user name `pgpadmin`.
 * On the machine from which you initiate the installation ("control node"), you
-  can install Ansible in a Python venv.
-  * On Ubuntu, you can install the venv module with
-  `sudo apt install python3-venv`.
+  can install Ansible with pipx.
 * From the control node, you can use SSH to log into the managed node as the
   sudo-capable user `pgpadmin`.
-  * On Ubuntu, you can install the OpenSSH server with
-  `sudo apt install openssh-server`.
+    * On Ubuntu, you can install the OpenSSH server with
+      `sudo apt install openssh-server`.
 
-## Step 0: Install Ansible and clone Arvados playbooks
+These instructions run parallel to the Arvados [single-host install](https://doc.arvados.org/main/install/salt-single-host.html). These instructions are streamlined to target the PGPi environment and configuration, but you can refer to that document for more background about any step.
 
-On the "control node":
-
-```
-python3 -m venv venv
-. venv/bin/activate
-pip install ansible~=8.7
-```
-
-```
-git clone https://github.com/arvados/arvados.git
-git -C arvados checkout main
-```
-
-## Step 1: Collect information
+## Step 1: Plan prerequisites
 
 You need to determine:
 
 1. The five-character Arvados cluster ID that you will use (the template files
-   use `xampl`);
+   use `xurid`);
 
 2. The hostname of the virtual machine you are installing on to (the template
-   files use `xampl.snowshoe-company.ts.net`).
+   files use `hostname.example`).
 
-## Step 2: Edit Arvados config
+## Step 2: Clone Arvados
 
-Copy `example-config.yml` from this repo, and then open the file for editing:
-
-1. Search-and-replace `xampl.snowshoe-company.ts.net` with the correct hostname
-   that you are using.
-
-2. Search-and-replace `xampl` with the five-character Arvados cluster ID that
-   you are using.
-
-3. Generate essential tokens (`ManagementToken`, `SystemRootToken`,
-   `BlobSigningKey`, `PostgreSQL.Connection.password`) and replace them in the
-   configuration file.
-   * An easy command to do this is:
-     ```
-     tr -dc A-Za-z0-9 </dev/urandom | head -c 32
-     ```
-
-## Step 3: Edit Ansible inventory
-
-Copy `example-inv.yml` from this repo, and then open the file for editing:
-
-1. Update the variable `arvados_config_file` to the correct path from Step 2.
-
-2. Search-and-replace `xampl.snowshoe-company.ts.net` with the correct hostname
-   that you are using.
-
-3. Search-and-replace `xampl` with the five-character Arvados cluster id that
-   you are using.
-
-### Optional: Install developmental version
-
-To install the latest developmental version of Arvados packages built from the
-`main` branch, add the variable `arvados_apt_suites: "-dev"` to the inventory
-file. For example,
-
-```yaml
-all:
-  vars:
-    # Update this to appropriate path
-    arvados_config_file: /home/example/ansible/xampl-config.yml
-    arvados_cluster_id: xampl
-    arvados_apt_suites: "-dev"
-    [...]
-```
-
-Note: Once developmental pacakages are installed, it will be difficult to
-downgrade the installation to a stable version.
-
-## Step 4: Install certificate
-
-This gets the certificates from Tailscale and installs them on the destination
-host.
+On the control node:
 
 ```
-ansible-playbook -u pgpadmin -Ki example-inv.yml get-tailscale-cert.yml
+git clone --depth=1 --branch=main git://git.arvados.org/arvados.git
 ```
 
-## Step 5: Run Arvados installer
+## Step 3: Install Ansible
 
-This installs the Arvados packages and configures the cluster.
-
-```
-ansible-playbook -u pgpadmin -Ki example-inv.yml arvados/tools/ansible/install-arvados-cluster.yml
-```
-
-Here, the path `arvados/tools/ansible/install-arvados-cluster.yml` refers to
-the Ansible playbook for Arvados cluster installation in the Arvados repository we cloned with Git in Step 0.
-
-## Step 6: Run diagnostics
-
-Confirm that you have a working installation.  Start by installing
-`arvados-client` locally, if you do not already have it installed.
+On the control node:
 
 ```
-ansible-playbook -K install-arvados-client.yml
-
-export ARVADOS_API_HOST=xampl.snowshoe-company.ts.net:7001
-export ARVADOS_API_TOKEN=nWixxxxxxxxFIXMExxxxxxxxxxxBPR8D
-arvados-client diagnostics
+sudo apt install pipx
+cd arvados/tools/ansible
+pipx install "$(grep -E '^ansible-core[^-_[:alnum:]]' requirements.txt)"
+pipx runpip ansible-core install -r requirements.txt
+ansible-galaxy install -r requirements.yml
 ```
 
-As of this writing, one error `ERROR 44: connecting to service
-endpoint (0 ms): Get "": unsupported protocol scheme ""` is expected.
-This is actually bug in the diagnostic tool -- it should skip over the
-unconfigured non-essential service rather than reporting it as an
-error.  It will be fixed in a future version.
+## Step 4: Edit Arvados config
+
+Copy `arvados/tools/ansible/examples/simple-cluster-config.yml` from your Arvados clone, open your copy in an editor, and make changes following the instructions at the top of the file.
+
+## Step 5: Edit Ansible inventory
+
+Copy `example-inventory.yml` from this directory, open your copy in an editor, and make the following changes:
+
+1. Under `hosts:`, replace `hostname.example` with the hostname of your node. Make sure to keep the trailing colon `:`.
+
+2. Update the variable `arvados_config_file` with the path of your Arvados configuration from step 4.
+
+3. Update the variable `arvados_cluster_id` with the cluster ID you chose in step 1.
+
+## Step 6: Install Arvados
+
+This gets a certificate from Tailscale, then installs Arvados with configuration to use it. Set `arvados_srcdir` to the path of the Arvados clone you created in step 2, and replace `YOUR-INVENORY.yml` with the inventory you wrote in step 5.
+
+```
+ansible-playbook -K -e "arvados_srcdir=$HOME/arvados" -i YOUR-INVENTORY.yml install-pgpi-cluster.yml
+```
+
+## Step 7: Run diagnostics
+
+SSH into the managed node and run:
+
+```
+sudo arvados-client sudo diagnostics -internal-client
+```
 
 # Copying a project to the h-gram image
 

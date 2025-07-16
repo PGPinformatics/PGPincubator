@@ -1,0 +1,88 @@
+### Example inventory for install-pgpi-cluster.yml ###
+#
+# This file illustrates how to deploy a simple single-node cluster with
+# install-pgpi-cluster.yml and variables you can use to customize
+# the deployment. Copy this file somewhere else, edit it following the
+# comments, and run the installer like:
+#   $ ansible-playbook -Ki YOUR-INVENTORY.yml -e "arvados_srcdir=$HOME/arvados" install-pgpi-cluster.yml
+
+### Core cluster configuration settings ###
+arvados_cluster_host:
+  hosts:
+    # Write the "main" hostname of your cluster host, with the trailing `:`.
+    hostname.example:
+      # If your user account on the managed node is not named `pgpadmin`,
+      # update this value to match.
+      ansible_user: pgpadmin
+
+  vars:
+    # To deploy a cluster, you must write a cluster configuration file and have
+    # a copy on the node where you run the Ansible installer. This file will be
+    # deployed to cluster hosts as needed and read by the Ansible installer for
+    # service configuration.
+    arvados_config_file: /PATH/TO/xurid-config.yml
+
+    # This is the cluster identifier (five lowercase alphanumerics) for the
+    # cluster configured in `arvados_config_file` that you want to deploy.
+    arvados_cluster_id: xurid
+
+    # `arvados_apt_suites` identifies which set of Arvados packages to install.
+    # By default it will get the latest official release. You can set this to
+    # "-testing" to get install the latest release candidate, or "-dev" to get
+    # the very latest packages built out of the main development tree. These
+    # options will install a less stable cluster with more bugs, but let you
+    # experiment with Arvados features under development.
+    arvados_apt_suites: "-dev"
+
+    # `arvados_tls` defines the source of the TLS certificate for each Arvados
+    # service. The PGPi installer will get certificates from Tailscale and
+    # install the files at the named locations. You don't need to change this.
+    arvados_tls:
+      Default:
+        cert: "/etc/ssl/certs/{{ inventory_hostname }}.pem"
+        key: "/etc/ssl/private/{{ inventory_hostname }}.key"
+        remote: true
+
+
+### Arvados services ###
+# The rest of the inventory defines the Arvados services to run on the
+# cluster host. You should not need to change anything from here on.
+arvados_postgresql:
+  children:
+    arvados_cluster_host:
+  vars:
+    arvados_postgresql_config: {}
+    arvados_postgresql_hba_sources:
+      - samehost
+
+arvados_api:
+  children:
+    arvados_cluster_host:
+
+arvados_controller:
+  children:
+    arvados_cluster_host:
+
+arvados_websocket:
+  children:
+    arvados_cluster_host:
+
+arvados_keepstore:
+  children:
+    arvados_cluster_host:
+
+arvados_keepproxy:
+  children:
+    arvados_cluster_host:
+
+arvados_keep_web:
+  children:
+    arvados_cluster_host:
+
+arvados_workbench:
+  children:
+    arvados_cluster_host:
+
+arvados_dispatch_local:
+  children:
+    arvados_cluster_host:
