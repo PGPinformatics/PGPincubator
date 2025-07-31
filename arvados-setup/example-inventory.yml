@@ -43,6 +43,9 @@ arvados_cluster_host:
         key: "/etc/ssl/private/{{ inventory_hostname }}.key"
         remote: true
 
+    # Configure the Docker daemon to use 172.17.0.1 as DNS resolver
+    dns_resolver: "172.17.0.1"
+
 
 ### Arvados services ###
 # The rest of the inventory defines the Arvados services to run on the
