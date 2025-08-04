@@ -59,16 +59,9 @@
         group: root
         mode: 0644
       notify:
-        - Stop docker service
         - Restart systemd-resolved service
 
   handlers:
-    - name: Stop docker service
-      become: yes
-      ansible.builtin.systemd_service:
-        name: docker
-        state: stopped
-
     - name: Restart systemd-resolved service
       become: yes
       ansible.builtin.systemd_service:
