@@ -16,50 +16,53 @@
 
 - hosts: arvados_cluster_host
   tasks:
-    - name: Create systemd-resolved configuration file directory
-      become: yes
-      ansible.builtin.file:
-        path: "/etc/systemd/resolved.conf.d"
-        state: directory
-        owner: root
-        group: root
-        mode: 0755
+    - name: Populate service facts
+      ansible.builtin.service_facts:
 
-    - name: Configure systemd-resolved DNS stub listener with Docker daemon
+    - name: Configure Docker and systemd-resolved
+      when: ansible_facts['services']['systemd-resolved.service']['status'] == 'enabled'
       become: yes
-      ansible.builtin.copy:
-        dest: "/etc/systemd/resolved.conf.d/docker-listener.conf"
-        content: |
-          [Resolve]
-          DNSStubListenerExtra=172.17.0.1
-        owner: root
-        group: root
-        mode: 0644
-      notify:
-        - Restart systemd-resolved service
+      block:
+      - name: Create systemd-resolved configuration file directory
+        ansible.builtin.file:
+          path: "/etc/systemd/resolved.conf.d"
+          state: directory
+          owner: root
+          group: root
+          mode: 0755
 
-    - name: Create service drop-in file directory for systemd-resolved service
-      become: yes
-      ansible.builtin.file:
-        path: "/etc/systemd/systemd-resolved.service.d"
-        state: directory
-        owner: root
-        group: root
-        mode: 0755
+      - name: Configure systemd-resolved DNS stub listener with Docker daemon
+        ansible.builtin.copy:
+          dest: "/etc/systemd/resolved.conf.d/docker-listener.conf"
+          content: |
+            [Resolve]
+            DNSStubListenerExtra=172.17.0.1
+          owner: root
+          group: root
+          mode: 0644
+        notify:
+          - Restart systemd-resolved service
 
-    - name: Update systemd-resolved drop-in service file
-      become: yes
-      ansible.builtin.copy:
-        dest: "/etc/systemd/systemd-resolved.service.d/after-docker.conf"
-        content: |
-          [Unit]
-          Wants=docker.service
-          After=docker.service
-        owner: root
-        group: root
-        mode: 0644
-      notify:
-        - Restart systemd-resolved service
+      - name: Create service drop-in file directory for systemd-resolved service
+        ansible.builtin.file:
+          path: "/etc/systemd/systemd-resolved.service.d"
+          state: directory
+          owner: root
+          group: root
+          mode: 0755
+
+      - name: Update systemd-resolved drop-in service file
+        ansible.builtin.copy:
+          dest: "/etc/systemd/systemd-resolved.service.d/after-docker.conf"
+          content: |
+            [Unit]
+            Wants=docker.service
+            After=docker.service
+          owner: root
+          group: root
+          mode: 0644
+        notify:
+          - Restart systemd-resolved service
 
   handlers:
     - name: Restart systemd-resolved service
