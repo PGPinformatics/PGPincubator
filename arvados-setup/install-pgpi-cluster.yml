@@ -10,6 +10,8 @@
           - "--key-file={{ arvados_tls.Default.key }}"
           - "{{ inventory_hostname }}"
         creates: "{{ arvados_tls.Default.key }}"
+      tags:
+        - tailscale
 
 - name: Install Arvados cluster
   ansible.builtin.import_playbook: "{{ arvados_srcdir|default(lookup('ansible.builtin.env', 'HOME') ~ '/arvados') }}/tools/ansible/install-arvados-cluster.yml"
