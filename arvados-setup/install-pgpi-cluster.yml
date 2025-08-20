@@ -49,6 +49,10 @@
   ansible.builtin.import_playbook: "{{ arvados_srcdir|default(lookup('ansible.builtin.env', 'HOME') ~ '/arvados') }}/tools/ansible/install-arvados-cluster.yml"
 
 - hosts: arvados_cluster_host
+  roles:
+    - hgram_distro_apt
+
+- hosts: arvados_cluster_host
   tasks:
     - name: Populate service facts
       ansible.builtin.service_facts:

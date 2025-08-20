@@ -66,7 +66,7 @@ Copy `example-inventory.yml` from this directory, open your copy in an editor, a
 
 ## Step 6: Install Arvados
 
-This gets a certificate from Tailscale, then installs Arvados with configuration to use it. Set `arvados_srcdir` to the path of the Arvados clone you created in step 2, and replace `YOUR-INVENORY.yml` with the inventory you wrote in step 5.
+This gets a certificate from Tailscale, then installs Arvados with configuration to use it. Set `arvados_srcdir` to the path of the Arvados clone you created in step 2, and replace `YOUR-INVENORY.yml` with the inventory you wrote in step 5. Note that you need to keep the `roles` directory in the same directory as the Ansible playbook `install-pgpi-cluster.yml`.
 
 ```
 ansible-playbook -K -e "arvados_srcdir=$HOME/arvados" -i YOUR-INVENTORY.yml install-pgpi-cluster.yml

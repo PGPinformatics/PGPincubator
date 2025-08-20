@@ -1,0 +1,53 @@
+- name: Set up base system APT repositories
+  become: yes
+  notify:
+    - "hgram_distro_apt : apt update"
+  block:
+    - name: Set up distro APT repository
+      ansible.builtin.deb822_repository:
+        name: "{{ ansible_distribution | lower }}"
+        types: deb
+        uris: "{{ hgram_distro_apt[ansible_distribution].mirror }}"
+        suites:
+          - "{{ ansible_distribution_release }}"
+          - "{{ ansible_distribution_release }}-updates"
+        components: "{{ hgram_distro_apt[ansible_distribution].components }}"
+        signed_by: "{{ hgram_distro_apt[ansible_distribution].signed_by }}"
+
+    - name: Set up distro security APT repository
+      ansible.builtin.deb822_repository:
+        name: "{{ ansible_distribution | lower }}-security"
+        types: deb
+        uris: "{{ hgram_distro_apt[ansible_distribution].security }}"
+        suites:
+          - "{{ ansible_distribution_release }}-security"
+        components: "{{ hgram_distro_apt[ansible_distribution].components }}"
+        signed_by: "{{ hgram_distro_apt[ansible_distribution].signed_by }}"
+
+- name: Deduplicating base system APT repositories
+  become: yes
+  notify:
+    - "hgram_distro_apt : apt update"
+  block:
+    - name: Cleanup arvados-distro repository
+      ansible.builtin.deb822_repository:
+        name: arvados-distro
+        state: absent
+
+    - name: Cleanup arvados-distro-security repository
+      ansible.builtin.deb822_repository:
+        name: arvados-distro-security
+        state: absent
+
+    - name: Stat legacy sources.list repository
+      ansible.builtin.stat:
+        path: /etc/apt/sources.list
+      register: legacy_sources_list
+
+    - name: Cleanup legacy sources.list repository
+      when: legacy_sources_list.stat.exists
+      ansible.builtin.command:
+        argv:
+          - mv
+          - "{{ legacy_sources_list.stat.path }}"
+          - "{{ legacy_sources_list.stat.path }}.hgramBackup"
