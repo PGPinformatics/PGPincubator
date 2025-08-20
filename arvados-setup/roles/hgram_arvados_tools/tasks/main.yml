@@ -1,0 +1,28 @@
+- name: Install Arvados client programs
+  become: yes
+  block:
+    - name: Install Python SDK programs
+      ansible.builtin.package:
+        name:
+          - python3-arvados-python-client
+          - python3-arvados-cwl-runner
+          - python3-arvados-fuse
+        state: present
+
+    - name: Install Ruby with development headers and build tools
+      ansible.builtin.package:
+        name:
+          - ruby
+          - ruby-dev
+          - build-essential
+          - libcurl4-openssl-dev
+        state: present
+
+    - name: Install arv command
+      ansible.builtin.command: gem install arvados-cli
+
+    - name: Install arvados-client
+      ansible.builtin.package:
+        name:
+          - arvados-client
+        state: present
