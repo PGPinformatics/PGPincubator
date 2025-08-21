@@ -1,141 +1,27 @@
 - hosts: arvados_cluster_host
-  become: yes
   tags:
     - tailscale
   vars:
     cert_check_minute: "{{ 60 | random(seed=inventory_hostname) }}"
     cert_check_dow: "{{ 7 | random(seed=inventory_hostname) }}"
-  tasks:
-    - name: Install openssl command line program
-      ansible.builtin.package:
-        name: openssl
-        state: present
-
-    - name: Inspect any existing cert with openssl
-      ansible.builtin.command:
-        argv:
-          - openssl
-          - x509
-          - -noout
-          - -checkend
-          - "{{ 10 * 86400 }}"
-          - -in
-          - "{{ arvados_tls.Default.cert }}"
-      register: tailscale_cert_expiry_status
-      changed_when: False
-      ignore_errors: yes
-
-    - name: Install tailscale cert
-      when: tailscale_cert_expiry_status.rc != 0
-      ansible.builtin.command:
-        argv:
-          - tailscale
-          - cert
-          - "--cert-file={{ arvados_tls.Default.cert }}"
-          - "--key-file={{ arvados_tls.Default.key }}"
-          - "{{ inventory_hostname }}"
-
-    - name: Install tailscale cert renewal cron job
-      ansible.builtin.cron:
-        name: "Renew tailscale HTTPS certificates"
-        cron_file: tailscale-cert-renew
-        user: root
-        hour: "0"
-        minute: "{{ cert_check_minute }}"
-        weekday: "{{ cert_check_dow }}"
-        job: "openssl x509 -noout -checkend {{ 8 * 86400 }} -in {{ arvados_tls.Default.cert }} 1> /dev/null 2>&1 || tailscale cert --cert-file={{ arvados_tls.Default.cert }} --key-file={{ arvados_tls.Default.key }} {{ inventory_hostname }}"
+    cert_path: "{{ arvados_tls.Default.cert }}"
+    key_path: "{{ arvados_tls.Default.key }}"
+  roles:
+    - hgram_tailscale_cert
 
 - name: Install Arvados cluster
   ansible.builtin.import_playbook: "{{ arvados_srcdir|default(lookup('ansible.builtin.env', 'HOME') ~ '/arvados') }}/tools/ansible/install-arvados-cluster.yml"
 
 - hosts: arvados_cluster_host
+  name: Post-install configuration of APT repos and adding packages
   roles:
     - hgram_distro_apt
+  tasks:
+    - meta: flush_handlers
+    - include_role:
+        name: hgram_arvados_tools
 
 - hosts: arvados_cluster_host
-  tasks:
-    - name: Populate service facts
-      ansible.builtin.service_facts:
-
-    - name: Configure Docker and systemd-resolved
-      when: ansible_facts['services']['systemd-resolved.service']['status'] == 'enabled'
-      become: yes
-      block:
-      - name: Create systemd-resolved configuration file directory
-        ansible.builtin.file:
-          path: "/etc/systemd/resolved.conf.d"
-          state: directory
-          owner: root
-          group: root
-          mode: 0755
-
-      - name: Configure systemd-resolved DNS stub listener with Docker daemon
-        ansible.builtin.copy:
-          dest: "/etc/systemd/resolved.conf.d/docker-listener.conf"
-          content: |
-            [Resolve]
-            DNSStubListenerExtra=172.17.0.1
-          owner: root
-          group: root
-          mode: 0644
-        notify:
-          - Restart systemd-resolved service
-
-      - name: Create service drop-in file directory for systemd-resolved service
-        ansible.builtin.file:
-          path: "/etc/systemd/systemd-resolved.service.d"
-          state: directory
-          owner: root
-          group: root
-          mode: 0755
-
-      - name: Update systemd-resolved drop-in service file
-        ansible.builtin.copy:
-          dest: "/etc/systemd/systemd-resolved.service.d/after-docker.conf"
-          content: |
-            [Unit]
-            Wants=docker.service
-            After=docker.service
-          owner: root
-          group: root
-          mode: 0644
-        notify:
-          - Restart systemd-resolved service
-
-  handlers:
-    - name: Restart systemd-resolved service
-      become: yes
-      ansible.builtin.systemd_service:
-        name: systemd-resolved
-        daemon_reload: true
-        state: restarted
-
-- hosts: arvados_cluster_host
-  name: Install Arvados client programs
-  become: yes
-  tasks:
-    - name: Install Python SDK programs
-      ansible.builtin.package:
-        name:
-          - python3-arvados-python-client
-          - python3-arvados-cwl-runner
-          - python3-arvados-fuse
-        state: present
-
-    - name: Install Ruby with development headers and build tools
-      ansible.builtin.package:
-        name:
-          - ruby
-          - ruby-dev
-          - build-essential
-          - libcurl4-openssl-dev
-        state: present
-
-    - name: Install arv command
-      ansible.builtin.command: gem install arvados-cli
-
-    - name: Install arvados-client
-      ansible.builtin.package:
-        name:
-          - arvados-client
-        state: present
+  name: Post-install configuration of Docker
+  roles:
+    - hgram_docker_dns_resolved
