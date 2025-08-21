@@ -1,0 +1,41 @@
+- name: Install openssl command line program
+  become: yes
+  ansible.builtin.package:
+    name: openssl
+    state: present
+
+- name: Inspect any existing cert with openssl
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - x509
+      - -noout
+      - -checkend
+      - "{{ cert_init_max_expiry_days * 86400 }}"
+      - -in
+      - "{{ cert_path }}"
+  register: tailscale_cert_expiry_status
+  changed_when: False
+  ignore_errors: yes
+
+- name: Install tailscale cert
+  become: yes
+  when: tailscale_cert_expiry_status.rc != 0
+  ansible.builtin.command:
+    argv:
+      - tailscale
+      - cert
+      - "--cert-file={{ cert_path }}"
+      - "--key-file={{ key_path }}"
+      - "{{ inventory_hostname }}"
+
+- name: Install tailscale cert renewal cron job
+  become: yes
+  ansible.builtin.cron:
+    name: "Renew tailscale HTTPS certificates"
+    cron_file: tailscale-cert-renew
+    user: root
+    hour: "0"
+    minute: "{{ cert_check_minute }}"
+    weekday: "{{ cert_check_dow }}"
+    job: "openssl x509 -noout -checkend {{ cert_periodic_max_expiry_days * 86400 }} -in {{ cert_path }} 1> /dev/null 2>&1 || tailscale cert --cert-file={{ cert_path }} --key-file={{ key_path }} {{ inventory_hostname }}"

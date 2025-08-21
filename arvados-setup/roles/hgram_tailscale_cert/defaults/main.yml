@@ -1,0 +1,2 @@
+cert_init_max_expiry_days: 10
+cert_periodic_max_expiry_days: 8
