@@ -1,58 +1,86 @@
 ### Example inventory for install-pgpi-cluster.yml ###
-#
-# This file illustrates how to deploy a simple single-node cluster with
-# install-pgpi-cluster.yml and variables you can use to customize
-# the deployment. Copy this file somewhere else, edit it following the
-# comments, and run the installer like:
-#   $ ansible-playbook -Ki YOUR-INVENTORY.yml -e "arvados_srcdir=$HOME/arvados" install-pgpi-cluster.yml
 
-### Core cluster configuration settings ###
-arvados_cluster_host:
-  hosts:
-    # Write the "main" hostname of your cluster host, with the trailing `:`.
-    hostname.example:
-      # If your user account on the managed node is not named `pgpadmin`,
-      # update this value to match.
-      ansible_user: pgpadmin
-
+# Default variables for all hosts.
+all:
   vars:
-    # To deploy a cluster, you must write a cluster configuration file and have
-    # a copy on the node where you run the Ansible installer. This file will be
-    # deployed to cluster hosts as needed and read by the Ansible installer for
-    # service configuration.
-    arvados_config_file: /PATH/TO/xurid-config.yml
-
-    # This is the cluster identifier (five lowercase alphanumerics) for the
-    # cluster configured in `arvados_config_file` that you want to deploy.
-    arvados_cluster_id: xurid
-
-    # `arvados_apt_suites` identifies which set of Arvados packages to install.
-    # By default it will get the latest official release. You can set this to
-    # "-testing" to get install the latest release candidate, or "-dev" to get
-    # the very latest packages built out of the main development tree. These
-    # options will install a less stable cluster with more bugs, but let you
-    # experiment with Arvados features under development.
-    arvados_apt_suites: "-dev"
-
-    # `arvados_tls` defines the source of the TLS certificate for each Arvados
-    # service. The PGPi installer will get certificates from Tailscale and
-    # install the files at the named locations. You don't need to change this.
+    ansible_user: pgpadmin
     arvados_tls:
       Default:
         cert: "/etc/ssl/certs/{{ inventory_hostname }}.pem"
         key: "/etc/ssl/private/{{ inventory_hostname }}.key"
         remote: true
-
-    # Configure the Docker daemon to use 172.17.0.1 as DNS resolver
     dns_resolver: "172.17.0.1"
 
+    hgram_RailsAPI_internal_port: 8080
+
+    hgram_Keepstore_internal_port: 8088
+
+    hgram_Keepbalance_internal_port: 8089
+
+    hgram_Websocket_internal_port: 8040
+    hgram_Websocket_external_port: 8440
+
+    hgram_Controller_internal_port: 8043
+    hgram_Controller_external_port: 8443
+
+    hgram_ContainerWebServices_port_min: 8900
+    hgram_ContainerWebServices_port_max: 8999
+
+    hgram_Keepproxy_internal_port: 8044
+    hgram_Keepproxy_external_port: 8444
+
+    hgram_WebDAV_internal_port: 8048
+    hgram_WebDAV_external_port: 8448
+
+# Hosts in the federation are grouped by their roles -- login cluster vs.
+# satellite clusters. In this example, satellite clusters run the latest
+# developmental version of Arvados.
+hgram_federation:
+  children:
+    hgram_login_cluster:
+    hgram_satellite_clusters:
+      vars:
+        arvados_apt_suites: "-dev"
+        hgram_login_delegation_host: "{{ groups['hgram_login_cluster'][0] }}"
+
+# Customizable host-specific information, including passwords, secrets, and
+# settings specific to the host roles (login cluster vs. satellite).
+# To generate passwords or secrets, you can use the following command:
+#     tr -dc A-Za-z0-9 </dev/urandom | head -c 64
+hgram_login_cluster:
+  hosts:
+    xlogn.your-domain.example:
+      arvados_cluster_id: xlogn
+      hgram_postgresql_password: "FIXMEFIXME"
+      hgram_management_token: "FIXMEFIXME"
+      hgram_system_root_token: "FIXMEFIXME"
+      hgram_blob_signing_key: "FIXMEFIXME"
+      hgram_google_login_client_secrets_path: /PATH/TO/GOOGLE/LOGIN/CREDS.json
+      hgram_login_cluster_trusted_clients:
+        - "https://*.your-domain.example"
+
+hgram_satellite_clusters:
+  hosts:
+    xurs1.your-domain.example:
+      arvados_cluster_id: xurs1
+      hgram_postgresql_password: "FIXMEFIXME"
+      hgram_management_token: "FIXMEFIXME"
+      hgram_system_root_token: "FIXMEFIXME"
+      hgram_blob_signing_key: "FIXMEFIXME"
+
+    xurs2.your-domain.example:
+      arvados_cluster_id: xurs2
+      hgram_postgresql_password: "FIXMEFIXME"
+      hgram_management_token: "FIXMEFIXME"
+      hgram_system_root_token: "FIXMEFIXME"
+      hgram_blob_signing_key: "FIXMEFIXME"
 
 ### Arvados services ###
 # The rest of the inventory defines the Arvados services to run on the
 # cluster host. You should not need to change anything from here on.
 arvados_postgresql:
   children:
-    arvados_cluster_host:
+    hgram_federation:
   vars:
     arvados_postgresql_config: {}
     arvados_postgresql_hba_sources:
@@ -60,32 +88,32 @@ arvados_postgresql:
 
 arvados_api:
   children:
-    arvados_cluster_host:
+    hgram_federation:
 
 arvados_controller:
   children:
-    arvados_cluster_host:
+    hgram_federation:
 
 arvados_websocket:
   children:
-    arvados_cluster_host:
+    hgram_federation:
 
 arvados_keepstore:
   children:
-    arvados_cluster_host:
+    hgram_federation:
 
 arvados_keepproxy:
   children:
-    arvados_cluster_host:
+    hgram_federation:
 
 arvados_keep_web:
   children:
-    arvados_cluster_host:
+    hgram_federation:
 
 arvados_workbench:
   children:
-    arvados_cluster_host:
+    hgram_federation:
 
 arvados_dispatch_local:
   children:
-    arvados_cluster_host:
+    hgram_federation:
