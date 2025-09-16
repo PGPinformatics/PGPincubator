@@ -41,7 +41,7 @@ hgram_federation:
     hgram_satellite_clusters:
       vars:
         arvados_apt_suites: "-dev"
-        hgram_login_delegation_host: "{{ groups['hgram_login_cluster'][0] }}"
+        hgram_login_delegation_host: "{{ groups['hgram_login_cluster'][0] | default('') }}"
 
 # Customizable host-specific information, including passwords, secrets, and
 # settings specific to the host roles (login cluster vs. satellite).

@@ -29,7 +29,7 @@ Clusters:
 {% for item in hgram_login_cluster_trusted_clients %}
         "{{ item }}": {}
 {% endfor %}
-{% else %}
+{% elif hgram_login_delegation_host and hostvars[hgram_login_delegation_host] %}
     RemoteClusters:
       {{ hostvars[hgram_login_delegation_host].arvados_cluster_id }}:
         Host: "{{ hgram_login_delegation_host }}:{{ hostvars[hgram_login_delegation_host].hgram_Controller_external_port }}"
@@ -39,7 +39,11 @@ Clusters:
     Login:
       PAM:
         Enable: false
-      LoginCluster: xlogn
+      LoginCluster: {{ hostvars[hgram_login_delegation_host].arvados_cluster_id }}
+{% else %}
+    Login:
+      PAM:
+        Enable: true
 {% endif %}
 
     Users:
