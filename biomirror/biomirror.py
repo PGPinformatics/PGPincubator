@@ -19,10 +19,18 @@ parser.add_argument(
     action="store_true",
     help="verifies existing data instead of fetching new data",
 )
+parser.add_argument(
+    "--fetch-limit",
+    type=int,
+    help="limits fetched versions to n tools for testing",
+)
 args = parser.parse_args()
 
 # Print something out before any work starts so we can verify it has started
 print("Starting biomirror...")
+
+if args.fetch_limit is not None:
+    print("Warning: Using fetch-limit for debug produces partial archives!")
 
 # Update tool index
 tools = []  # Array of tools from index
@@ -61,6 +69,9 @@ if args.verify:
     print("Loaded", len(toolVersions), "tool versions from output")
 else:
     for tool in tools:
+        if args.fetch_limit is not None and len(toolVersions) >= args.fetch_limit:
+            print("Reached debug fetch-limit, exiting early")
+            break
         tool_id = str(tool["id"])
         tool_versions = []
         for tool_version in tool["versions"]:
@@ -117,7 +128,10 @@ if len(skipped) > 0:
 else:
     print("[OK] No tool versions failed to load")
 if len(skippedStats) > 0:
-    print("[!!]", len(skippedStats), "tools missing from versions data when processing stats")
+    if args.fetch_limit is not None:
+        print("[!!]", len(skippedStats), "tools not processed for stats due to fetch-limit, stats may be incomplete")
+    else:
+        print("[!!]", len(skippedStats), "tools missing from versions data when processing stats")
 else:
     print("[OK] All tools processed for stats")
 
