@@ -22,11 +22,18 @@ requirements:
 inputs:
   verify:
     type: boolean?
-    label: "Skip index update"
-    doc: "Load tool index from disk instead of API"
+    label: "Verify data"
+    doc: "Verifies existing data instead of fetching new data"
     inputBinding:
       position: 1
       prefix: "--verify"
+  fetchLimit:
+    type: int?
+    label: "Limit fetches"
+    doc: "Limits fetched versions to n tools for testing"
+    inputBinding:
+      position: 2
+      prefix: "--fetch-limit"
 
 outputs:
   output:
