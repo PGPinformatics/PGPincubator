@@ -43,7 +43,7 @@ else:
 
 # Update tool versions
 toolVersions = {}  # Dict of tool_id to version array
-skipped: list[str] = []
+skipped: set[str] = set()
 if args.verify:
     for tool in tools:
         tool_id = str(tool["id"])
@@ -54,10 +54,10 @@ if args.verify:
                 toolVersions.update({tool_id: json.load(file)})
         except FileNotFoundError:
             print("Error: versions.json was not found for tool", tool_id)
-            skipped.append(tool_id)
+            skipped.add(tool_id)
         except Exception as error:
             print("Unknown error:", error)
-            skipped.append(tool_id)
+            skipped.add(tool_id)
     print("Loaded", len(toolVersions), "tool versions from output")
 else:
     for tool in tools:
@@ -69,8 +69,8 @@ else:
                 version = fetchToolVersion(tool_id, tool_version_id)
                 tool_versions.append(version)
             except Exception as err:
-                skipped.append(tool_id + " " + tool_version_id)
-                print("Skipping tool due to error:", err)
+                skipped.add(tool_id + "/" + tool_version_id)
+                print("Skipping", tool_id + "/" + tool_version_id ,"due to error:", err)
         if len(tool_versions) > 0:
             # Add tool versions to dict
             toolVersions.update({tool_id: tool_versions})
@@ -89,18 +89,23 @@ totalCondaImages = 0
 totalSingularityBytes = 0
 totalSingularityImages = 0
 
+skippedStats: set[str] = set()
 for tool in tools:
-    for version in toolVersions[tool["id"]]:
-        totalVersions += 1
-        for image in version["images"]:
-            if image["image_type"] == "Docker":
-                totalDockerImages += 1
-                totalDockerBytes += int(image["size"])
-            if image["image_type"] == "Conda":
-                totalCondaImages += 1
-            if image["image_type"] == "Singularity":
-                totalSingularityImages += 1
-                totalSingularityBytes += int(image["size"])
+    try:
+        for version in toolVersions[tool["id"]]:
+            totalVersions += 1
+            for image in version["images"]:
+                if image["image_type"] == "Docker":
+                    totalDockerImages += 1
+                    totalDockerBytes += int(image["size"])
+                if image["image_type"] == "Conda":
+                    totalCondaImages += 1
+                if image["image_type"] == "Singularity":
+                    totalSingularityImages += 1
+                    totalSingularityBytes += int(image["size"])
+    except:
+        skippedStats.add(tool["id"])
+
 
 print("\nIntegrity Check:\n----------------")
 if len(tools) != len(toolVersions):
@@ -111,6 +116,10 @@ if len(skipped) > 0:
     print("[!!]", len(skipped), "tool versions failed to load from API or disk")
 else:
     print("[OK] No tool versions failed to load")
+if len(skippedStats) > 0:
+    print("[!!]", len(skippedStats), "tools missing from versions data when processing stats")
+else:
+    print("[OK] All tools processed for stats")
 
 print("\nStats:\n------")
 print("Tools:", len(tools))
