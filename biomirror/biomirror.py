@@ -73,6 +73,7 @@ else:
             print("Reached debug fetch-limit, exiting early")
             break
         tool_id = str(tool["id"])
+        print("Requesting versions for:", tool_id)
         tool_versions = []
         for tool_version in tool["versions"]:
             tool_version_id = tool_version["id"]

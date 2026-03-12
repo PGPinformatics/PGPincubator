@@ -86,13 +86,13 @@ def fetchToolVersion(tool: str, version: str):
         retrySleep = API_RETRY_DELAY_START * pow(2, retryCount)
         retryCount += 1
         try:
-            print("Requesting tool version:", version)
             response = requests.get(
                 versionUrl,
             )
             response.raise_for_status()
 
             return response.json()
+        # These errors are retried, don't raise but only warn
         except requests.exceptions.HTTPError as error:
             print("Http Error:", error)
         except Exception as error:
