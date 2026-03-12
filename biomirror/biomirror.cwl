@@ -13,30 +13,23 @@ hints:
 
 doc: "Mirrors BioContainers API metadata into a collection"
 baseCommand: python
-arguments: ["-u", "/app/biomirror/biomirror.py", "--out-dir", $(runtime.outdir)/output]
+arguments: ["-u", "/app/biomirror/biomirror.py", "--out-dir", $(runtime.outdir)]
 
 requirements:
   NetworkAccess:
      networkAccess: true
 
 inputs:
-  skipIndexUpdate:
+  verify:
     type: boolean?
     label: "Skip index update"
     doc: "Load tool index from disk instead of API"
     inputBinding:
       position: 1
-      prefix: "--skip-index-update"
-  skipVersionUpdate:
-    type: boolean?
-    label: "Skip version update"
-    doc: "Load tool versions from disk instead of API"
-    inputBinding:
-      position: 2
-      prefix: "--skip-version-update"
+      prefix: "--verify"
 
 outputs:
   output:
     type: Directory
     outputBinding:
-      glob: $(runtime.outdir)/output/
+      glob: $(runtime.outdir)

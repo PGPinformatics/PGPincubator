@@ -15,14 +15,9 @@ parser.add_argument(
     default="output",
 )
 parser.add_argument(
-    "--skip-index-update",
+    "--verify",
     action="store_true",
-    help="skip updating tool index",
-)
-parser.add_argument(
-    "--skip-version-update",
-    action="store_true",
-    help="skip updating tool versions",
+    help="verifies existing data instead of fetching new data",
 )
 args = parser.parse_args()
 
@@ -32,7 +27,7 @@ print("Starting biomirror...")
 # Update tool index
 tools = []  # Array of tools from index
 indexPath: pathlib.Path = args.out_dir / "index.json"
-if args.skip_index_update:
+if args.verify:
     # Try to read existing tools index
     with open(indexPath, "r", encoding="utf-8") as file:
         tools = json.load(file)
@@ -49,7 +44,7 @@ else:
 # Update tool versions
 toolVersions = {}  # Dict of tool_id to version array
 skipped: list[str] = []
-if args.skip_version_update:
+if args.verify:
     for tool in tools:
         tool_id = str(tool["id"])
         try:
