@@ -77,6 +77,8 @@ else:
                 skipped.append(tool_id + " " + tool_version_id)
                 print("Skipping tool due to error:", err)
         if len(tool_versions) > 0:
+            # Add tool versions to dict
+            toolVersions.update({tool_id: tool_versions})
             # Write tool versions to json
             toolDataDir = getToolDir(args.out_dir, tool_id, True)
             with open(toolDataDir / "versions.json", "w", encoding="utf-8") as file:
