@@ -119,16 +119,27 @@ for tool in tools:
         skippedStats.add(tool["id"])
 
 
+# If any integrity errors, return nonzero
+retVal = 0
+
 print("\nIntegrity Check:\n----------------")
+# Match length of tools to dict of versions
 if len(tools) != len(toolVersions):
+    retVal = 1
     print("[!!] Different number of tools in index vs version list")
 else:
     print("[OK] Same number of tools in index vs version list")
+
+# Checked for skipped tool versions
 if len(skipped) > 0:
+    retVal = 1
     print("[!!]", len(skipped), "tool versions failed to load from API or disk")
 else:
     print("[OK] No tool versions failed to load")
+
+# Check for missing versions found during stats
 if len(skippedStats) > 0:
+    retVal = 1
     if args.fetch_limit is not None:
         print("[!!]", len(skippedStats), "tools not processed for stats due to fetch-limit, stats may be incomplete")
     else:
@@ -152,3 +163,5 @@ print(
     str(round(totalSingularityBytes / (1000 * 1000 * 1000 * 1000), 2)),
     "TB",
 )
+
+exit(retVal)

@@ -33,4 +33,10 @@ The script will archive the main tools index data to `output/index.json` and eac
     arvados-cwl-runner --project-uuid zzzzz-j7d0g-000000000000000 --create-workflow biomirror.cwl
     ```
 
+    or update an existing workflow:
+
+    ```bash
+    arvados-cwl-runner --update-workflow zzzzz-7fd4e-000000000000000 biomirror.cwl
+    ```
+
 3. Start the workflow and wait for the output collection to be generated
