@@ -61,6 +61,19 @@ def fetchToolsIndexPage(offset: int):
 
             return response.json(), lastOffset
         except requests.exceptions.HTTPError as error:
+            # Try to get Retry-After header, set next retry delay if given
+            try:
+                retryAfterString = error.response.headers.get("Retry-After")
+                if retryAfterString is not None:
+                    retryAfterDelay = int(retryAfterString)
+                    print("Setting retry delay to", retryAfterDelay, "at request of API")
+                    retrySleep = retryAfterDelay
+            except (ValueError, TypeError):
+                # Warn that retry delay was received but not parsed
+                print("Error parsing Retry-After header from HTTP Error Response")
+            except:
+                # Other errors when accessing Retry-After header
+                print("Error retrieving Retry-After header from HTTP Error Response")
             print("Http Error:", error)
         except Exception as error:
             print("Unknown error:", error)
@@ -94,6 +107,19 @@ def fetchToolVersion(tool: str, version: str):
             return response.json()
         # These errors are retried, don't raise but only warn
         except requests.exceptions.HTTPError as error:
+            # Try to get Retry-After header, set next retry delay if given
+            try:
+                retryAfterString = error.response.headers.get("Retry-After")
+                if retryAfterString is not None:
+                    retryAfterDelay = int(retryAfterString)
+                    print("Setting retry delay to", retryAfterDelay, "at request of API")
+                    retrySleep = retryAfterDelay
+            except (ValueError, TypeError):
+                # Warn that retry delay was received but not parsed
+                print("Error parsing Retry-After header from HTTP Error Response")
+            except:
+                # Other errors when accessing Retry-After header
+                print("Error retrieving Retry-After header from HTTP Error Response")
             print("Http Error:", error)
         except Exception as error:
             print("Unknown error:", error)
