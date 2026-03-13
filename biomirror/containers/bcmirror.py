@@ -6,7 +6,7 @@ from utils import fetchToolVersion, fetchToolsIndex, createDataDir, getToolDir
 
 # Set up flags / args
 parser = argparse.ArgumentParser(
-    prog="biomirror.py", description="BioContainers Mirror Script"
+    prog="bcmirror.py", description="BioContainers Mirror Script"
 )
 parser.add_argument(
     "--out-dir",
@@ -27,7 +27,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 # Print something out before any work starts so we can verify it has started
-print("Starting biomirror...")
+print("Starting bcmirror...")
 
 if args.fetch_limit is not None:
     print("Warning: Using fetch-limit for debug produces partial archives!")

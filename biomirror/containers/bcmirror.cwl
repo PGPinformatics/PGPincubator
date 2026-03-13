@@ -4,7 +4,7 @@ class: CommandLineTool
 
 hints:
   DockerRequirement:
-    dockerPull: biomirror
+    dockerPull: bcmirror
     # Dockerfile won't work unless we include the project files too
     # dockerFile: {$include: Dockerfile}
   ResourceRequirement:
@@ -13,7 +13,7 @@ hints:
 
 doc: "Mirrors BioContainers API metadata into a collection"
 baseCommand: python
-arguments: ["-u", "/app/biomirror/biomirror.py", "--out-dir", $(runtime.outdir)]
+arguments: ["-u", "/app/bcmirror/bcmirror.py", "--out-dir", $(runtime.outdir)]
 
 requirements:
   NetworkAccess:
