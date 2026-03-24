@@ -36,7 +36,11 @@ inputs:
       prefix: "--fetch-limit"
 
 outputs:
-  output:
+  index:
+    type: File
+    outputBinding:
+      glob: $(runtime.outdir)/index.json
+  tools:
     type: Directory
     outputBinding:
-      glob: $(runtime.outdir)
+      glob: $(runtime.outdir)/tools

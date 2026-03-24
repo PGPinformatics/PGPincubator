@@ -51,8 +51,9 @@ def fetchToolsIndexPage(offset: int):
         try:
             print("Requesting tools index offset", offset, "limit", API_TOOLS_PAGE_SIZE)
             response = requests.get(
-                apiToolsUrl,
-                {**toolParams, "offset": offset, "limit": API_TOOLS_PAGE_SIZE},
+                url=apiToolsUrl,
+                params={**toolParams, "offset": offset, "limit": API_TOOLS_PAGE_SIZE},
+                timeout=30
             )
             response.raise_for_status()
             lastPage = response.headers["last_page"]
@@ -100,7 +101,8 @@ def fetchToolVersion(tool: str, version: str):
         retryCount += 1
         try:
             response = requests.get(
-                versionUrl,
+                url=versionUrl,
+                timeout=30
             )
             response.raise_for_status()
 
