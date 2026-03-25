@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 DOI_CSV_URL = "https://pirca-4zz18-zqp877swo8kypyn.collections.pirca.arvadosapi.com/PMID_PMCID_DOI.csv"
 DOI_CSV_NAME = "PMID_PMCID_DOI.csv"
-CATALOG_DB_FILE = "./catalog.db"
+CATALOG_DB_FILE = "./dist/catalog.db"
 
 # Helper class to read files from disk or fetch them on-demand when needed
 class FileFetcher:
