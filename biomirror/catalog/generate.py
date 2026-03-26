@@ -9,14 +9,14 @@ CATALOG_DB_FILE = "./dist/catalog.db"
 
 con = sqlite3.connect(CATALOG_DB_FILE)
 cur = con.cursor()
-cur.execute("CREATE TABLE IF NOT EXISTS literature(pmid, pmcid, doi)")
 
+# Create literature table
+cur.execute("CREATE TABLE literature(pmid, pmcid, doi)")
 # Create indexes to minimize data transfer to the browser
 cur.execute("CREATE INDEX idx_lit_pmid on literature (pmid)")
 cur.execute("CREATE INDEX idx_lit_pmcid on literature (pmcid)")
 cur.execute("CREATE INDEX idx_lit_doi on literature (doi)")
-
-# open file
+# Populate literature data
 with FileFetcher(DOI_CSV_NAME, DOI_CSV_URL) as file:
     lineCount = sum(1 for line in file)
     file.seek(0)
@@ -31,7 +31,6 @@ with FileFetcher(DOI_CSV_NAME, DOI_CSV_URL) as file:
             # Don't commit between each insertion for speed
         else:
             print("Anomalous row skipped:", i)
-
 # Commit DOIDB data now
 con.commit()
 con.close()
