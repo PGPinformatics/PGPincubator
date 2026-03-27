@@ -20,7 +20,27 @@ parser.add_argument(
     help="bcmirror data directory to be imported",
     default="../containers/output",
 )
+parser.add_argument(
+    "--force",
+    action="store_true",
+    help="automatically overwrites existing sqlite DB",
+)
 args = parser.parse_args()
+
+# Check for tools index before proceeding
+indexPath: pathlib.Path = args.bc_data / "index.json"
+if not indexPath.exists():
+    print("BioContainer mirror data not found. Please provide the directory containing index.json and tools folder using --bc-data")
+    exit(1)
+# Check for existing db before proceeding
+# Do this last to avoid deleting the DB if other prerequisites aren't met
+if pathlib.Path(CATALOG_DB_FILE).exists():
+    if args.force:
+        print("Force flag specified, removing existing DB")
+        pathlib.Path(CATALOG_DB_FILE).unlink()
+    else:
+        print("Existing DB found, please move or remove it before proceeding")
+        exit(1)
 
 con = sqlite3.connect(CATALOG_DB_FILE)
 cur = con.cursor()
@@ -59,7 +79,7 @@ cur.execute("CREATE INDEX idx_tool_license on tools (license)")
 cur.execute("CREATE INDEX idx_tool_organization on tools (organization)")
 # Populate tool index data
 tools = []
-with open(args.bc_data / "index.json", "r", encoding="utf-8") as file:
+with open(indexPath, "r", encoding="utf-8") as file:
     tools = json.load(file)
 for tool in tools:
     id = tool["id"]
