@@ -2,8 +2,10 @@ let worker;
 const searchForm = document.getElementById('searchForm');
 const searchInput = document.getElementById('searchInput');
 const searchButton = document.getElementById('searchButton');
-const resultsTable = document.getElementById('resultsTable');
-const resultsBody = document.getElementById('resultsBody');
+const litResultsTable = document.getElementById('litResultsTable');
+const litResultsBody = document.getElementById('litResultsBody');
+const toolResultsTable = document.getElementById('toolResultsTable');
+const toolResultsBody = document.getElementById('toolResultsBody');
 
 function setStatus(message, level) {
   const statusBox = document.getElementById('statusBox');
@@ -69,39 +71,52 @@ async function doSearch(e) {
   // form is disabled while submit is running
   searchButton.disabled = true;
   setStatus("Searching...", "info");
-  // Hide table
-  resultsTable.style.display = "none";
-  resultsBody.innerHTML = "";
+  // Hide tables
+  litResultsTable.style.display = "none";
+  litResultsBody.innerHTML = "";
+  toolResultsTable.style.display = "none";
+  toolResultsBody.innerHTML = "";
 
   try {
-      const results = await worker.db.query(`SELECT pmid, pmcid, doi FROM literature WHERE pmid = ? OR pmcid = ? OR doi = ? LIMIT 10`, [query, query, query]);
+    const litResults = await worker.db.query(`SELECT pmid, pmcid, doi FROM literature WHERE pmid = ? OR pmcid = ? OR doi = ?`, [query, query, query]);
+    const toolResults = await worker.db.query(`SELECT name, description, license FROM tools WHERE name LIKE ? OR description LIKE ?`, [`%${query}%`, `%${query}%`]);
+    const resultCount = (litResults ? litResults.length : 0) + (toolResults ? toolResults.length : 0);
 
-      if (results && results.length > 0) {
-        setStatus(`Found ${results.length} result(s).`, "success");
+    if (resultCount > 0) {
+      setStatus(`Found ${resultCount} result(s).`, "success");
 
-        results.forEach(row => {
-          const tr = document.createElement('tr');
+      litResults.forEach(row => {
+        const tr = document.createElement('tr');
+        const tdPmid = document.createElement('td');
+        tdPmid.textContent = row.pmid || '-';
+        const tdPmcid = document.createElement('td');
+        tdPmcid.textContent = row.pmcid || '-';
+        const tdDoi = document.createElement('td');
+        tdDoi.textContent = row.doi || '-';
+        tr.appendChild(tdPmid);
+        tr.appendChild(tdPmcid);
+        tr.appendChild(tdDoi);
+        litResultsBody.appendChild(tr);
+      });
+      litResultsTable.style.display = "table";
 
-          const tdPmid = document.createElement('td');
-          tdPmid.textContent = row.pmid || '-';
-
-          const tdPmcid = document.createElement('td');
-          tdPmcid.textContent = row.pmcid || '-';
-
-          const tdDoi = document.createElement('td');
-          tdDoi.textContent = row.doi || '-';
-
-          tr.appendChild(tdPmid);
-          tr.appendChild(tdPmcid);
-          tr.appendChild(tdDoi);
-
-          resultsBody.appendChild(tr);
-        });
-
-        resultsTable.style.display = "table";
-      } else {
-        setStatus("No results found.", "info");
-      }
+      toolResults.forEach(row => {
+        const tr = document.createElement('tr');
+        const tdName = document.createElement('td');
+        tdName.textContent = row.name || '-';
+        const tdDescription = document.createElement('td');
+        tdDescription.textContent = row.description || '-';
+        const tdLicense = document.createElement('td');
+        tdLicense.textContent = row.license || '-';
+        tr.appendChild(tdName);
+        tr.appendChild(tdDescription);
+        tr.appendChild(tdLicense);
+        toolResultsBody.appendChild(tr);
+      });
+      toolResultsTable.style.display = "table";
+    } else {
+      setStatus("No results found.", "info");
+    }
   } catch (error) {
     console.error("Search error:", error);
     setStatus("Error executing search. See console for details.", "danger");

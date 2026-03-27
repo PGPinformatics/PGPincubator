@@ -8,13 +8,21 @@
     .hidden {
       display: none;
     }
+    table {
+      /* Prevent horizontal table overflow */
+      table-layout: fixed;
+    }
+    table td:first-child {
+      /* Wrap anywhere in ID columns */
+      word-break: break-all;
+    }
   </style>
   <body>
     <div class="container py-4">
       <div class="mb-4">
         <h1 class="h3">Literature Catalog Browser</h1>
         <p class="text-muted">
-          Search for PMID, PMCID, or DOI
+          Search PMID, PMCID, DOI, or tool names
         </p>
       </div>
 
@@ -24,7 +32,7 @@
             type="text"
             id="searchInput"
             class="form-control"
-            placeholder="Search by PMID, PMCID, or DOI..."
+            placeholder="Search by PMID, PMCID, DOI, or tool name..."
             aria-label="Search ID"
           >
           <button type="submit" class="btn btn-primary" id="searchButton">
@@ -35,7 +43,7 @@
 
       <div id="statusBox" class="alert alert-info py-2 hidden"></div>
 
-      <table id="resultsTable" class="table hidden">
+      <table id="litResultsTable" class="table hidden">
         <thead>
           <tr>
           <th>PMID</th>
@@ -43,7 +51,18 @@
           <th>DOI</th>
           </tr>
         </thead>
-        <tbody id="resultsBody"></tbody>
+        <tbody id="litResultsBody"></tbody>
+      </table>
+
+      <table id="toolResultsTable" class="table hidden">
+        <thead>
+          <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>License</th>
+          </tr>
+        </thead>
+        <tbody id="toolResultsBody"></tbody>
       </table>
     </div>
 
