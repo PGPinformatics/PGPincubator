@@ -18,7 +18,7 @@ parser.add_argument(
     "--bc-data",
     type=pathlib.Path,
     help="bcmirror data directory to be imported",
-    default="../containers/output",
+    default="../bcmirror/output",
 )
 parser.add_argument(
     "--force",
