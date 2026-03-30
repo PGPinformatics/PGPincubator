@@ -39,8 +39,8 @@ outputs:
   index:
     type: File
     outputBinding:
-      glob: $(runtime.outdir)/index.json
+      glob: index.json
   tools:
     type: Directory
     outputBinding:
-      glob: $(runtime.outdir)/tools
+      glob: tools
