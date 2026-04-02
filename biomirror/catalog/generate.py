@@ -11,7 +11,8 @@ from utils import FileFetcher
 DOI_CSV_URL = "https://pirca-4zz18-zqp877swo8kypyn.collections.pirca.arvadosapi.com/PMID_PMCID_DOI.csv"
 DOI_CSV_FILENAME = "PMID_PMCID_DOI.csv"
 CATALOG_DB_FILENAME = "catalog.db"
-DIST_DIR = "dist"
+# Dist path needed so that script can copy web UI to output
+DIST_DIR = pathlib.Path(os.path.dirname(__file__)) / "dist"
 
 # Set up flags / args
 parser = argparse.ArgumentParser(
@@ -54,10 +55,10 @@ if pathlib.Path(catalogDbPath).exists():
 
 # Prepare to create DB file
 # If out_dir is not dist, copy dist to out_dir
-if not os.path.samefile(pathlib.Path(DIST_DIR), args.out_dir):
+if not os.path.samefile(DIST_DIR, args.out_dir):
     print("Detected out-dir differs from dist folder, copying dist to output...")
     shutil.copytree(
-        pathlib.Path(DIST_DIR),
+        DIST_DIR,
         args.out_dir,
         ignore=shutil.ignore_patterns('catalog.db', 'catalog.db-journal'),
         dirs_exist_ok=True
