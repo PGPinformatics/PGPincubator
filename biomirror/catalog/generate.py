@@ -75,7 +75,7 @@ with FileFetcher(DOI_CSV_FILENAME, DOI_CSV_URL) as file:
     file.seek(0)
     file_reader = csv.reader(file)
     # For all rows
-    for i in tqdm(file_reader, total=lineCount, desc="Import"):
+    for i in tqdm(file_reader, total=lineCount, desc="Import", disable=None):
         if len(i) == 3:
             cur.execute("""
                 INSERT INTO literature VALUES
