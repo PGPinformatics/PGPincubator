@@ -1,14 +1,17 @@
 import argparse
 import csv
 import json
+import os
 import pathlib
+import shutil
 import sqlite3
 from tqdm import tqdm
 from utils import FileFetcher
 
 DOI_CSV_URL = "https://pirca-4zz18-zqp877swo8kypyn.collections.pirca.arvadosapi.com/PMID_PMCID_DOI.csv"
-DOI_CSV_NAME = "PMID_PMCID_DOI.csv"
-CATALOG_DB_FILE = "./dist/catalog.db"
+DOI_CSV_FILENAME = "PMID_PMCID_DOI.csv"
+CATALOG_DB_FILENAME = "catalog.db"
+DIST_DIR = "./dist"
 
 # Set up flags / args
 parser = argparse.ArgumentParser(
@@ -19,6 +22,12 @@ parser.add_argument(
     type=pathlib.Path,
     help="bcmirror data directory to be imported",
     default="../bcmirror/output",
+)
+parser.add_argument(
+    "--out-dir",
+    type=pathlib.Path,
+    help="Output directory for database and dist files",
+    default=DIST_DIR,
 )
 parser.add_argument(
     "--force",
@@ -34,15 +43,24 @@ if not indexPath.exists():
     exit(1)
 # Check for existing db before proceeding
 # Do this last to avoid deleting the DB if other prerequisites aren't met
-if pathlib.Path(CATALOG_DB_FILE).exists():
+catalogDbPath: pathlib.Path = args.out_dir / CATALOG_DB_FILENAME
+if pathlib.Path(catalogDbPath).exists():
     if args.force:
         print("Force flag specified, removing existing DB")
-        pathlib.Path(CATALOG_DB_FILE).unlink()
+        pathlib.Path(catalogDbPath).unlink()
     else:
-        print("Existing DB found, please move or remove it before proceeding")
+        print("Existing DB found, please move or remove it before proceeding or use --force to overwrite it")
         exit(1)
 
-con = sqlite3.connect(CATALOG_DB_FILE)
+# Prepare to create DB file
+# If out_dir is not dist, copy dist to out_dir
+# This is done before generating the DB so that stale DBs in dist don't clobber the new DB
+if not os.path.samefile(DIST_DIR, args.out_dir):
+    print("Detected out-dir differs from dist folder, copying dist to output...")
+    shutil.copytree(DIST_DIR, args.out_dir, dirs_exist_ok=True)
+
+# Create new DB
+con = sqlite3.connect(catalogDbPath)
 cur = con.cursor()
 
 # Create literature table
@@ -52,7 +70,7 @@ cur.execute("CREATE INDEX idx_lit_pmid on literature (pmid)")
 cur.execute("CREATE INDEX idx_lit_pmcid on literature (pmcid)")
 cur.execute("CREATE INDEX idx_lit_doi on literature (doi)")
 # Populate literature data
-with FileFetcher(DOI_CSV_NAME, DOI_CSV_URL) as file:
+with FileFetcher(DOI_CSV_FILENAME, DOI_CSV_URL) as file:
     lineCount = sum(1 for line in file)
     file.seek(0)
     file_reader = csv.reader(file)
