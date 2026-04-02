@@ -20,7 +20,7 @@ class FileFetcher:
                 chunkSize = 10 * 1024
                 if contentLengthHeader is not None:
                     contentLength = int(contentLengthHeader)
-                for chunk in tqdm(response.iter_content(chunk_size=chunkSize), total=contentLength / chunkSize, desc="Download"):
+                for chunk in tqdm(response.iter_content(chunk_size=chunkSize), total=contentLength / chunkSize, desc="Download", disable=None):
                     file.write(chunk)
             self.file = open(self.filename, mode="r", encoding="utf-8")
 
