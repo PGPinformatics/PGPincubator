@@ -11,7 +11,7 @@ from utils import FileFetcher
 DOI_CSV_URL = "https://pirca-4zz18-zqp877swo8kypyn.collections.pirca.arvadosapi.com/PMID_PMCID_DOI.csv"
 DOI_CSV_FILENAME = "PMID_PMCID_DOI.csv"
 CATALOG_DB_FILENAME = "catalog.db"
-DIST_DIR = "./dist"
+DIST_DIR = "dist"
 
 # Set up flags / args
 parser = argparse.ArgumentParser(
@@ -49,15 +49,19 @@ if pathlib.Path(catalogDbPath).exists():
         print("Force flag specified, removing existing DB")
         pathlib.Path(catalogDbPath).unlink()
     else:
-        print("Existing DB found, please move or remove it before proceeding or use --force to overwrite it")
+        print("Existing DB found in out-dir, please move or remove it before proceeding or use --force to overwrite it")
         exit(1)
 
 # Prepare to create DB file
 # If out_dir is not dist, copy dist to out_dir
-# This is done before generating the DB so that stale DBs in dist don't clobber the new DB
-if not os.path.samefile(DIST_DIR, args.out_dir):
+if not os.path.samefile(pathlib.Path(DIST_DIR), args.out_dir):
     print("Detected out-dir differs from dist folder, copying dist to output...")
-    shutil.copytree(DIST_DIR, args.out_dir, dirs_exist_ok=True)
+    shutil.copytree(
+        pathlib.Path(DIST_DIR),
+        args.out_dir,
+        ignore=shutil.ignore_patterns('catalog.db', 'catalog.db-journal'),
+        dirs_exist_ok=True
+    )
 
 # Create new DB
 con = sqlite3.connect(catalogDbPath)
