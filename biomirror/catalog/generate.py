@@ -5,6 +5,7 @@ import os
 import pathlib
 import shutil
 import sqlite3
+import tempfile
 from tqdm import tqdm
 from utils import FileFetcher
 
@@ -13,6 +14,8 @@ DOI_CSV_FILENAME = "PMID_PMCID_DOI.csv"
 CATALOG_DB_FILENAME = "catalog.db"
 # Dist path needed so that script can copy web UI to output
 DIST_DIR = pathlib.Path(os.path.dirname(__file__)) / "dist"
+# Download the CSV to tmp
+DOI_CSV_FILEPATH = pathlib.Path(tempfile.gettempdir()) / DOI_CSV_FILENAME
 
 # Set up flags / args
 parser = argparse.ArgumentParser(
@@ -75,7 +78,7 @@ cur.execute("CREATE INDEX idx_lit_pmid on literature (pmid)")
 cur.execute("CREATE INDEX idx_lit_pmcid on literature (pmcid)")
 cur.execute("CREATE INDEX idx_lit_doi on literature (doi)")
 # Populate literature data
-with FileFetcher(DOI_CSV_FILENAME, DOI_CSV_URL) as file:
+with FileFetcher(DOI_CSV_FILEPATH, DOI_CSV_URL) as file:
     lineCount = sum(1 for line in file)
     file.seek(0)
     file_reader = csv.reader(file)
