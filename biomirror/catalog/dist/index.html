@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <meta charset="UTF-8" />
+  <title>Catalog Browser</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <style>
+    .hidden {
+      display: none;
+    }
+    table {
+      /* Prevent horizontal table overflow */
+      table-layout: fixed;
+    }
+    table td:first-child {
+      /* Wrap anywhere in ID columns */
+      word-break: break-all;
+    }
+  </style>
+  <body>
+    <div class="container py-4">
+      <div class="mb-4">
+        <h1 class="h3">Literature Catalog Browser</h1>
+        <p class="text-muted">
+          Search PMID, PMCID, DOI, or tool names
+        </p>
+      </div>
+
+      <form id="searchForm">
+        <div class="input-group mb-3">
+          <input
+            type="text"
+            id="searchInput"
+            class="form-control"
+            placeholder="Search by PMID, PMCID, DOI, or tool name..."
+            aria-label="Search ID"
+          >
+          <button type="submit" class="btn btn-primary" id="searchButton">
+            Search
+          </button>
+        </div>
+      </form>
+
+      <div id="statusBox" class="alert alert-info py-2 hidden"></div>
+
+      <table id="litResultsTable" class="table hidden">
+        <thead>
+          <tr>
+          <th>PMID</th>
+          <th>PMCID</th>
+          <th>DOI</th>
+          </tr>
+        </thead>
+        <tbody id="litResultsBody"></tbody>
+      </table>
+
+      <table id="toolResultsTable" class="table hidden">
+        <thead>
+          <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>License</th>
+          </tr>
+        </thead>
+        <tbody id="toolResultsBody"></tbody>
+      </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sql.js-httpvfs@0.8.12/dist/index.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
