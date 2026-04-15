@@ -121,4 +121,25 @@ for tool in tools:
 # Commit tools table
 con.commit()
 
+# This is optional for now since it relies on the contrib script being run
+# In the future, generate should run it automatically or source a pre-unpacked file
+# Because any querying built on top later would break if it remains optional
+try:
+    # Load hu IDs
+    with open("contrib/untap-ids.txt", "r", encoding="utf-8") as file:
+        print("untap-ids.txt found, importing to humans table")
+        # Create humans table, only if file found
+        cur.execute("CREATE TABLE humans(huid)")
+        # Indexes
+        cur.execute("CREATE INDEX idx_humans_huid on humans (huid)")
+        for huid in file:
+            cur.execute("""
+                INSERT INTO humans VALUES
+                    (?)
+            """, [huid.strip()])
+        # Commit humans table
+        con.commit()
+except FileNotFoundError:
+    print("contrib/untap-ids not found, skipping")
+
 con.close()

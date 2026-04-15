@@ -4,14 +4,20 @@ This part of the BioMirror project ingests data from other BioMirror tools as we
 
 ## Running the Catalog Generation Script
 
-1. Run BCMirror to create an tools archive
-2. Install requirements
+### Prerequisites
+
+* Run BCMirror to create an tools archive
+* Run contrib/untap-unpack.py to create untap-ids.txt
+
+### Creating DB
+
+1. Install requirements
 
     ```bash
     pip install -r requirements.txt
     ```
 
-3. Run the script
+2. Run the script
 
     ```bash
     python generate.py --bc-data /path/to/bcdata/output
