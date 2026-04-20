@@ -1,4 +1,4 @@
-- hosts: arvados_cluster_host
+- hosts: hgram_federation
   tags:
     - tailscale
   vars:
@@ -9,10 +9,36 @@
   roles:
     - hgram_tailscale_cert
 
+- hosts: hgram_federation
+  name: Instantiate temporary Arvados configuration file locally
+  tasks:
+    - name: Create local temporary file
+      delegate_to: localhost
+      ansible.builtin.tempfile:
+        state: file
+        prefix: "{{ inventory_hostname }}-"
+        suffix: ".config.yml"
+      register: hgram_tmp_config
+
+    - name: Populate login cluster credentials
+      when: "'hgram_login_cluster' in group_names"
+      delegate_to: localhost
+      ansible.builtin.include_vars:
+        file: "{{ hgram_google_login_client_secrets_path }}"
+        name: hgram_google_secrets
+
+    - name: Write configuration content to temporary file
+      delegate_to: localhost
+      ansible.builtin.template:
+        src: config.yml.j2
+        dest: "{{ hgram_tmp_config.path }}"
+
 - name: Install Arvados cluster
+  vars:
+    arvados_config_file: "{{ hgram_tmp_config.path }}"
   ansible.builtin.import_playbook: "{{ arvados_srcdir|default(lookup('ansible.builtin.env', 'HOME') ~ '/arvados') }}/tools/ansible/install-arvados-cluster.yml"
 
-- hosts: arvados_cluster_host
+- hosts: hgram_federation
   name: Post-install configuration of APT repos and adding packages
   roles:
     - hgram_distro_apt
@@ -21,7 +47,7 @@
     - include_role:
         name: hgram_arvados_tools
 
-- hosts: arvados_cluster_host
+- hosts: hgram_federation
   name: Post-install configuration of Docker
   roles:
     - hgram_docker_dns_resolved

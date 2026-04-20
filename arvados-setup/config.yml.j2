@@ -1,0 +1,118 @@
+# This Arvados configuration file is managed by Ansible.
+
+Clusters:
+  {{ arvados_cluster_id }}:
+    PostgreSQL:
+      Connection:
+        user: arvados
+        password: "{{ hgram_postgresql_password }}"
+        host: localhost
+        port: "5432"
+        dbname: "arvados_{{ arvados_cluster_id }}"
+
+    ManagementToken: "{{ hgram_management_token }}"
+    SystemRootToken: "{{ hgram_system_root_token }}"
+
+    Collections:
+      BlobSigningKey: "{{ hgram_blob_signing_key }}"
+      DefaultReplication: 1
+
+{% if 'hgram_login_cluster' in group_names %}
+    Login:
+      PAM:
+        Enable: false
+      Google:
+        Enable: true
+        ClientID: "{{ hgram_google_secrets.web.client_id }}"
+        ClientSecret: "{{ hgram_google_secrets.web.client_secret }}"
+      TrustedClients:
+{% for item in hgram_login_cluster_trusted_clients %}
+        "{{ item }}": {}
+{% endfor %}
+{% elif hgram_login_delegation_host and hostvars[hgram_login_delegation_host] %}
+    RemoteClusters:
+      {{ hostvars[hgram_login_delegation_host].arvados_cluster_id }}:
+        Host: "{{ hgram_login_delegation_host }}:{{ hostvars[hgram_login_delegation_host].hgram_Controller_external_port }}"
+        Proxy: true
+        ActivateUsers: true
+
+    Login:
+      PAM:
+        Enable: false
+      LoginCluster: {{ hostvars[hgram_login_delegation_host].arvados_cluster_id }}
+{% else %}
+    Login:
+      PAM:
+        Enable: true
+{% endif %}
+
+    Users:
+      AutoAdminFirstUser: true
+
+    TLS:
+      Certificate: /etc/ssl/certs/ssl-cert-snakeoil.pem
+      Key: /etc/ssl/private/ssl-cert-snakeoil.key
+
+    Volumes:
+      {{ arvados_cluster_id }}-nyw5e-000000000000000:
+        Driver: Directory
+        Replication: 1
+        DriverParameters:
+          Root: /var/lib/arvados/keep-data
+
+    # Port ranges used by services:
+    #  8040-8079: Internal service behind nginx
+    #  8440-8479: nginx front-end for corresponding service
+    #  8080-8099: Internal-only service
+    #  8900-8999: Service container ports
+    Services:
+      RailsAPI:
+        InternalURLs:
+          "http://localhost:{{ hgram_RailsAPI_internal_port }}": {}
+
+      Keepstore:
+        InternalURLs:
+          "http://localhost:{{ hgram_Keepstore_internal_port }}": {}
+
+      Keepbalance:
+        InternalURLs:
+          "http://localhost:{{ hgram_Keepbalance_internal_port }}": {}
+
+      Websocket:
+        InternalURLs:
+          "http://localhost:{{ hgram_Websocket_internal_port }}": {}
+        ExternalURL: "wss://{{ inventory_hostname }}:{{ hgram_Websocket_external_port }}/websocket"
+
+      Controller:
+        InternalURLs:
+          "http://localhost:{{ hgram_Controller_internal_port }}": {}
+        ExternalURL: "https://{{ inventory_hostname }}:{{ hgram_Controller_external_port }}"
+
+      ContainerWebServices:
+        # This ExternalURL should match Controller's.
+        ExternalURL: "https://{{ inventory_hostname }}:{{ hgram_Controller_external_port  }}"
+        ExternalPortMin: {{ hgram_ContainerWebServices_port_min }}
+        ExternalPortMax: {{ hgram_ContainerWebServices_port_max }}
+
+      Keepproxy:
+        InternalURLs:
+          "http://localhost:{{ hgram_Keepproxy_internal_port }}": {}
+        ExternalURL: "https://{{ inventory_hostname }}:{{ hgram_Keepproxy_external_port }}"
+
+      WebDAV:
+        InternalURLs:
+          "http://localhost:{{ hgram_WebDAV_internal_port }}": {}
+        ExternalURL: "https://{{ inventory_hostname }}:{{ hgram_WebDAV_external_port }}"
+
+      WebDAVDownload:
+        # These URLs should match WebDAV's.
+        InternalURLs:
+          "http://localhost:{{ hgram_WebDAV_internal_port }}": {}
+        ExternalURL: "https://{{ inventory_hostname }}:{{ hgram_WebDAV_external_port }}"
+
+      Workbench2:
+        ExternalURL: "https://{{ inventory_hostname }}"
+
+      Workbench1:
+        # These URLs should match Workbench2's.
+        ExternalURL: "https://{{ inventory_hostname }}"
